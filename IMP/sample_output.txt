@@ -1,0 +1,162 @@
+ Answer – Where to locate a new well for your oil‑and‑gas company                                                   │
+│                                                                                                                     │
+│  The passages you provided do not name any specific oil‑ or gas‑bearing basins, blocks, or fields that would be     │
+│  “the best” place to drill.  What they do outline, however, are the legal and procedural factors you must consider  │
+│  when selecting a site.  Below is a synthesis of those factors, together with the steps you should follow to        │
+│  identify an appropriate location.                                                                                  │
+│                                                                                                                     │
+│  -----------------------------------------------------------------------------------------------------------------  │
+│                                                                                                                     │
+│  1.  Identify a licensed block that is open for exploration                                                         │
+│                                                                                                                     │
+│                                                                                                                     │
+│   What the sources say                                    Implication for you                                       │
+│   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────   │
+│   2026 “New upstream licensing round offers up to 50      Wait for the next licensing round (or review the          │
+│   additional oil and gas blocks for exploration.”         current round) and submit a bid for a block that is       │
+│   [Passage 1]                                             geologically promising.                                   │
+│   The Open Acreage Licensing Policy (OALP) and            Track OALP/HELP announcements; these are the official     │
+│   Hydrocarbon Exploration and Licensing Policy (HELP)     channels for acquiring a petroleum lease (the post‑2025   │
+│   are the mechanisms through which blocks are awarded.    term for what used to be a mining lease).                 │
+│   [Passage 5]                                                                                                       │
+│                                                                                                                     │
+│                                                                                                                     │
+│  ▌ Action: Monitor MoPNG/DGH notices for the upcoming licensing round and prepare a competitive bid for the         │
+│  ▌ block(s) that show the highest hydrocarbon potential (based on seismic, geological surveys, etc.).               │
+│                                                                                                                     │
+│  -----------------------------------------------------------------------------------------------------------------  │
+│                                                                                                                     │
+│  2.  Ensure the block is outside prohibited zones or can obtain the required clearances                             │
+│                                                                                                                     │
+│                                                                                                                     │
+│   Regulatory guidance                                     What you must check                                       │
+│   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────   │
+│   Eco‑Sensitive Zones (ESZ) “generally prohibit           Verify that the proposed well pad, access road or         │
+│   commercial mining, polluting industries, and large new  pipeline does not fall within an ESZ, or if it does, be   │
+│   tourism infrastructure… Whether oil and gas             prepared to apply for the necessary Forest and Wildlife   │
+│   exploration/drilling is permitted… is decided           clearances.                                               │
+│   case‑by‑case, generally requiring clearance from the                                                              │
+│   Forest Advisory Committee and the National Board for                                                              │
+│   Wildlife’s Standing Committee.” [Passage 2]                                                                       │
+│   Protected areas – e.g., the NBWL Standing Committee     If you target a block that overlaps a sanctuary or        │
+│   approved exploratory‑only drilling within the           wildlife reserve, you may only be allowed exploratory     │
+│   Hollongapar Gibbon Wildlife Sanctuary (2025). [Passage  drilling, with a prohibition on commercial extraction.    │
+│   1]                                                                                                                │
+│   Offshore Areas Mineral (Development and Regulation)     For offshore prospects, participate in the auction        │
+│   Amendment Act, 2023 introduced auction‑based            process and comply with the Offshore Areas Operating      │
+│   allocation for offshore areas. [Passage 1]              Right Rules (2024).                                       │
+│                                                                                                                     │
+│                                                                                                                     │
+│  ▌ Action: Cross‑check the geographic boundaries of any candidate block against the latest ESZ notifications,       │
+│  ▌ Wildlife Sanctuary maps, and Coastal Regulation Zone (CRZ) limits (MoEFCC).  If a block lies within an ESZ,      │
+│  ▌ prepare a detailed clearance application (Forest Advisory Committee + NBWL Standing Committee) and be ready      │
+│  ▌ to limit activities to the exploratory phase only.                                                               │
+│                                                                                                                     │
+│  -----------------------------------------------------------------------------------------------------------------  │
+│                                                                                                                     │
+│  3.  Secure a Petroleum Lease under the 2025 amendment                                                              │
+│                                                                                                                     │
+│                                                                                                                     │
+│   Key provisions                                          Practical meaning                                         │
+│   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────   │
+│   Section 4A – “no person may undertake prospecting,      You must obtain a petroleum lease before any drilling.    │
+│   exploration, development or production… except under a                                                            │
+│   valid petroleum lease.” [Passage 4]                                                                               │
+│   Stability clause (Section 5(3)) – lease terms cannot    Provides investor protection once the lease is granted.   │
+│   be altered to the lessee’s disadvantage. [Passage 4]                                                              │
+│   Leases may run up to 30 years and be extended for the   Once you win a block, you will have a long‑term right     │
+│   full economic life of a field; applications must be     to develop it, subject to compliance.                     │
+│   decided within 180 days. [Passage 4]                                                                              │
+│                                                                                                                     │
+│                                                                                                                     │
+│  ▌ Action: After winning a block, submit the petroleum‑lease application to the Central Government (the             │
+│  ▌ exclusive authority) and ensure all required documents (technical, financial, environmental) are complete to     │
+│  ▌ meet the 180‑day decision timeline.                                                                              │
+│                                                                                                                     │
+│  -----------------------------------------------------------------------------------------------------------------  │
+│                                                                                                                     │
+│  4.  Obtain environmental and forest clearances                                                                     │
+│                                                                                                                     │
+│                                                                                                                     │
+│   Clearance required                                              When it applies                                   │
+│   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────   │
+│   Environmental Impact Assessment (EIA) / Environmental           All wells, whether on‑shore or offshore.          │
+│   Clearance (EC) – required for any drilling activity. [Passage                                                     │
+│   2]                                                                                                                │
+│   Forest (Conservation) Act, 1980 clearance – if the well pad,    On‑shore projects intersecting forest land.       │
+│   road or pipeline falls on notified forest land. [Passage 2]                                                       │
+│   Wildlife (Protection) Act, 1972 clearance – if the project is   Projects near sanctuaries, national parks, etc.   │
+│   within a protected area or its ESZ. [Passage 2]                                                                   │
+│   Site Restoration Fund (SRF) – mandatory contribution for        All E&P contracts.                                │
+│   eventual de‑commissioning. [Passage 3]                                                                            │
+│                                                                                                                     │
+│                                                                                                                     │
+│  ▌ Action: Prepare a comprehensive EIA dossier, engage early with the Forest Advisory Committee and National        │
+│  ▌ Board for Wildlife, and budget for the SRF contributions.                                                        │
+│                                                                                                                     │
+│  -----------------------------------------------------------------------------------------------------------------  │
+│                                                                                                                     │
+│  5.  Consider foreign‑investment rules (if applicable)                                                              │
+│                                                                                                                     │
+│                                                                                                                     │
+│   Rule                                                    Effect                                                    │
+│   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────   │
+│   100 % FDI allowed under the automatic route for E&P,    If you have foreign partners, verify their nationality;   │
+│   except for entities from countries sharing a land       obtain “Government Route” approval if needed.             │
+│   border with India (require prior Government approval).                                                            │
+│   [Passage 3]                                                                                                       │
+│   Domestic crude and gas must be sold within the Indian   Your commercial model should focus on domestic supply     │
+│   market (no export). [Passage 3]                         contracts.                                                │
+│                                                                                                                     │
+│                                                                                                                     │
+│  -----------------------------------------------------------------------------------------------------------------  │
+│                                                                                                                     │
+│  6.  Practical recommendation – How to pick the “best” spot                                                         │
+│                                                                                                                     │
+│   1 Start with the upcoming licensing round (2026) and shortlist blocks that:                                       │
+│      • Have positive geological indicators (seismic, basin studies).                                                │
+│      • Are outside ESZs, wildlife sanctuaries, and CRZs, or where you can secure the necessary clearances for       │
+│        exploratory work.                                                                                            │
+│   2 Run a clearance feasibility check: map the block against MoEFCC’s ESZ notifications (e.g., the Kumbhalgarh      │
+│     ESZ, Rajasthan – 243 sq km) and any protected‑area boundaries.                                                  │
+│   3 Assess infrastructure and logistics: proximity to pipelines, roads, ports, and availability of water/land       │
+│     rights (state‑level matters).                                                                                   │
+│   4 Calculate the financial upside: royalty rates under the revised basin‑based framework (noted in the 2026        │
+│     notification) and the stability clause that protects against future tax/royalty hikes.                          │
+│   5 Proceed to bid for the block that scores highest on geological promise and clearance feasibility.               │
+│                                                                                                                     │
+│  -----------------------------------------------------------------------------------------------------------------  │
+│                                                                                                                     │
+│  Bottom line                                                                                                        │
+│                                                                                                                     │
+│   • The documents you provided do not name a specific location that is definitively “the best” for drilling.        │
+│   • The best place will be a block you win in the next upstream licensing round that:                               │
+│      1 Lies outside or can obtain clearance for any ESZ or protected‑area restrictions,                             │
+│      2 Allows you to obtain a petroleum lease under the 2025 amendment, and                                         │
+│      3 Offers favorable geological prospects and infrastructure access.                                             │
+│                                                                                                                     │
+│  Next steps: monitor MoPNG/DGH announcements for the 2026 licensing round, conduct a GIS overlay of candidate       │
+│  blocks with ESZ and wildlife maps, and prepare the required environmental, forest, and wildlife clearances before  │
+│  submitting your bid.                                                                                               │
+│                                                                                                                     │
+│  If you need assistance locating the current list of available blocks or interpreting specific ESZ maps, that       │
+│  information lies outside the supplied passages.                                                                    │
+│                                                                                                                     │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+─────────────────────────────────────────────────────── Sources ───────────────────────────────────────────────────────
+  1. [Page 13] score=45.1%  11. Recent Developments Timeline (2023-2026) 2023 Offshore Areas Mineral (Development and  
+Regulation) Amendment Act, 202...
+  2. [Page 10] score=50.3%  revised position permits small permanent structures and normal Forest Department
+eco-development activity, and exempts a...
+  3. [Page 12] score=31.8%  G Petroleum and Natural Gas (Safety in Offshore Operations) Rules, 2008 — framed under the 
+ORD Act specifically for offs...
+  4. [Page 5] score=40.3%  G Expanded definition of "mineral oils" to explicitly include crude oil, condensate, coal   
+bed methane, shale oil/gas, ti...
+  5. [Page 3] score=35.8%  1. Constitutional & Institutional Framework India has a federal constitutional structure in 
+which legislative power over...
+  6. [Page 14] score=39.8%  12. Glossary of Key Terms & Abbreviations ORD Act Oilfields (Regulation and Development)   
+Act, 1948 ORDA 2025 Oilfields (...
+
+  Answered in 7.90s
+
+>:
