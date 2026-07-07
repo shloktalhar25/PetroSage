@@ -1,7 +1,8 @@
 {
-  "source": "data\\source.pdf",
-  "num_chunks": 15,
+  "source": "Manual_data",
+  "num_chunks": 15360,
   "embed_model": "sentence-transformers/all-MiniLM-L6-v2",
   "chunk_size": 512,
-  "chunk_overlap": 80
+  "chunk_overlap": 80,
+  "backend": "devdb"
 }
