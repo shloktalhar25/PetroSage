@@ -83,6 +83,10 @@ python query.py -q "your question" --country Norway
 Full details, including what's skipped during ingestion and every CLI/REPL option, are in
 **[docs/HOW_TO_RUN.md](docs/HOW_TO_RUN.md)**.
 
+## Corrective RAG (CRAG)
+
+You can optionally enable Corrective RAG to explicitly evaluate the retrieved chunks before they are sent to the final generation model. When enabled (via `python query.py --crag` or the `/crag` command in the interactive REPL), the system uses `qwen/qwen3-32b` to filter out any chunks that are irrelevant to the user's question. This helps prevent hallucinations and provides a clear signal when the query is completely out-of-scope for the knowledge base.
+
 ## Tests
 
 ```bash

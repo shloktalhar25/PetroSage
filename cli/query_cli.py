@@ -5,6 +5,7 @@ cli/query_cli.py - Interactive CLI / REPL for the Advanced RAG system.
 Usage (inside activated venv):
     python query.py                          # interactive REPL
     python query.py --compress               # enable contextual compression
+    python query.py --crag                   # enable corrective RAG
     python query.py -q "your question"       # single-shot query
     python query.py --verbose                # show expanded queries
     python query.py --country Norway -q "..."  # scope retrieval to one country
@@ -35,7 +36,7 @@ BANNER = """
   Advanced RAG  |  Groq  |  openai/gpt-oss-120b
 [/bold cyan]
 [dim]Type your question and press Enter.
-Commands: [bold]/help[/bold]  [bold]/sources[/bold]  [bold]/verbose[/bold]  [bold]/compress[/bold]  [bold]/country[/bold]  [bold]/clear[/bold]  [bold]/quit[/bold][/dim]
+Commands: [bold]/help[/bold]  [bold]/sources[/bold]  [bold]/verbose[/bold]  [bold]/compress[/bold]  [bold]/crag[/bold]  [bold]/country[/bold]  [bold]/clear[/bold]  [bold]/quit[/bold][/dim]
 """
 
 HELP_TEXT = """
@@ -45,6 +46,7 @@ HELP_TEXT = """
   /clear         -- Clear screen
   /verbose       -- Toggle verbose mode (show expanded queries)
   /compress      -- Toggle contextual compression (extra LLM calls, better quality)
+  /crag          -- Toggle corrective RAG (evaluates chunk relevance using qwen/qwen3-32b)
   /country <name> -- Scope retrieval to one country (e.g. /country Norway)
   /country        -- Clear the country filter (search all countries)
   /quit          -- Exit
@@ -163,6 +165,11 @@ def run_repl(pipeline: RAGPipeline, verbose: bool, country: str | None):
             state = "[green]ON[/green]" if pipeline.compress else "[red]OFF[/red]"
             console.print(f"  Contextual compression: {state}")
             continue
+        elif user_input.lower() == "/crag":
+            pipeline.crag = not pipeline.crag
+            state = "[green]ON[/green]" if pipeline.crag else "[red]OFF[/red]"
+            console.print(f"  Corrective RAG (CRAG): {state}")
+            continue
         elif user_input.lower() == "/country" or user_input.lower().startswith("/country "):
             arg = user_input[len("/country"):].strip()
             country = arg or None
@@ -200,12 +207,13 @@ def main():
     parser = argparse.ArgumentParser(description="Advanced RAG CLI -- Groq / openai/gpt-oss-120b")
     parser.add_argument("-q", "--question", help="Single-shot question (skip REPL)")
     parser.add_argument("--compress", action="store_true", help="Enable contextual compression")
+    parser.add_argument("--crag", action="store_true", help="Enable corrective RAG evaluation")
     parser.add_argument("--verbose", action="store_true", help="Show expanded queries")
     parser.add_argument("--country", help="Scope retrieval to one country (e.g. Norway)")
     args = parser.parse_args()
 
     try:
-        pipeline = RAGPipeline(compress=args.compress)
+        pipeline = RAGPipeline(compress=args.compress, crag=args.crag)
     except FileNotFoundError as e:
         console.print(f"[red]Setup error:[/red] {e}")
         sys.exit(1)

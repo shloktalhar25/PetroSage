@@ -20,13 +20,15 @@ from rag.expansion import expand_query
 from rag.rerank import mmr_rerank
 from rag.compression import compress_chunks
 from rag.generation import generate_answer
+from rag.crag import evaluate_chunks
 
 
 class RAGPipeline:
-    def __init__(self, compress: bool = False):
+    def __init__(self, compress: bool = False, crag: bool = False):
         """
         Args:
             compress: Enable LLM-based contextual compression (extra API calls).
+            crag: Enable Corrective RAG to filter out irrelevant chunks.
         """
         store = get_vector_store()
         store.load()
@@ -34,6 +36,7 @@ class RAGPipeline:
         self.embedder  = Embedder.get()
         self.llm       = LLMProvider()
         self.compress  = compress
+        self.crag      = crag
 
     def query(
         self, question: str, verbose: bool = False, country: Optional[str] = None
@@ -72,6 +75,23 @@ class RAGPipeline:
         # 5. MMR re-rank
         query_vec = self.embedder.encode([question])[0]
         final_chunks = mmr_rerank(candidates, query_vec, self.embedder, k=MMR_K)
+
+        # 5.5 Optional Corrective RAG (CRAG) evaluation
+        if self.crag:
+            original_len = len(final_chunks)
+            final_chunks = evaluate_chunks(question, final_chunks, verbose=verbose)
+            
+            # Print explicit CRAG feedback to the console
+            console.print(f"  [dim]↳ CRAG evaluated chunks: retained {len(final_chunks)} of {original_len} relevant chunks.[/dim]")
+
+            if not final_chunks:
+                # If all chunks were deemed irrelevant
+                return RAGResponse(
+                    answer="Based on my evaluation (Corrective RAG), none of the retrieved information is relevant to your question. Therefore, I cannot provide a factual answer.",
+                    chunks=[],
+                    queries_used=all_queries,
+                    model=GROQ_MODEL,
+                )
 
         # 6. Optional contextual compression
         if self.compress:
