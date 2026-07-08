@@ -64,8 +64,17 @@ python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # then fill in GROQ_API_KEY
 
+## For Windows
+# then first install rust on your system
+# then run this command to start the server:
+cargo run --release --features server --bin devdb-server
+
+# For Linux
+#now in new terminal 
 cd db/DevDB && make serve &     # start the vector DB server
 cd ../..
+
+# Common : Run ingestion script from root
 python ingest.py                # ingest everything under Manual_data/
 python inspect_data.py          # sanity-check what got ingested
 python query.py -q "your question" --country Norway
