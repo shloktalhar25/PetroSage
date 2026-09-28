@@ -1,0 +1,19 @@
+COMPANY OPERATIONAL PLAN: OFFSHORE RIG EXPANSION 2026
+Project Name: Offshore Rig Platform Alpha-4 Installation
+Company: Apex Oil & Gas Operating Ltd.
+Date: September 2026
+
+1. EXECUTIVE SUMMARY
+Apex Oil & Gas proposes the installation of a deep-water jack-up drilling rig (Alpha-4) to tap into newly surveyed hydrocarbon reserves off the western coast of India.
+
+2. GEOGRAPHIC & POSITIONING SPECIFICATIONS
+- Target Site: Block W-2026-X
+- Distance from Coastline: 24 Nautical Miles (44.4 km) off Gujarat/Kutch shore.
+- Water Depth: 120 meters.
+- Rig Type: Dynamic Positioning Jack-Up Rig (Alpha-4).
+
+3. REGULATORY ASSUMPTIONS & PERMITTING
+- The project team assumes that since the rig is positioned 24 NM (44.4 km) offshore, it lies outside local 12 NM territorial jurisdiction and can proceed with standard company internal safety approvals without prior Ministry of Environment, Forest and Climate Change (MoEFCC) Environmental Clearance (EC) or Defense Maritime Clearance.
+
+4. WASTE & EFFLUENT MANAGEMENT PLAN
+- Produced water from initial test drilling will be discharged directly into the surrounding sea at a depth of 40m without onshore treatment or closed-loop recycling.

@@ -1,0 +1,9 @@
+BlockID,BlockName,Basin,Type,Latitude,Longitude,Operator,Status,RigAssigned,Depth_m,Production_bopd,Gas_MMSCMD,WaterCut_Pct,EIA_Status
+KG-OSN-2024/1,KG Offshore Deepwater,Krishna-Godavari,Offshore Deep,16.120,82.350,Reliance / BP,Drilling,Rig Deepwater Frontier,3850,45000,10.2,12%,Approved (MoEFCC 2024)
+RJ-ONN-2001/1,Barmer Onshore Block,Rajasthan,Onshore Land,27.150,71.320,Cairn Oil & Gas,Producing,Rig Desert Explorer 4,1850,125000,1.5,28%,Approved
+MB-OSN-2020/2,Mumbai Offshore South,Cambay / Mumbai High,Offshore Shallow,18.850,71.220,ONGC,Producing,Jackup Sagar Samrat,2400,80000,4.8,34%,Approved
+AM-ONN-2019/3,Assam Shelf Upper,Assam-Arakan,Onshore Land,26.850,94.620,Oil India Ltd (OIL),Exploration,Land Rig OIL-88,2900,12000,2.1,8%,In Review
+CB-ONN-2022/4,Cambay Onshore Basin,Cambay,Onshore Land,22.400,72.650,ONGC,Producing,Rig Cambay-2,1650,18000,3.5,42%,Approved
+CY-OSN-2021/1,Cauvery Deepwater,Cauvery,Offshore Deep,11.200,80.150,ONGC,Testing,Drillship Aban Abraham,4200,8500,0.8,5%,Approved
+KG-DWN-98/2,KG Deepwater Northern,Krishna-Godavari,Offshore Ultra-Deep,16.350,82.680,ONGC,Appraisal,Rig Platinum Explorer,4600,28000,8.5,15%,Approved
+WB-OSN-2023/1,Bengal Offshore Basin,Mahanadi-Bengal,Offshore Shallow,21.300,88.100,ONGC,Seismic Survey,RV Samudra Kaustubh,0,0,0.0,0%,Pending Survey

@@ -1,0 +1,53 @@
+AssetID,Type,Name,Lat,Lng,Status,Capacity,Product,Operator,Line,Seq
+T01,Truck,Truck KG-33,16.512,81.643,En Route,8000 bbl,Crude Oil,ONGC,,
+T02,Truck,Truck RJ-17,27.021,70.912,Available,10000 bbl,Crude Oil,Cairn India,,
+T03,Truck,Truck MH-05,19.076,72.877,Loading,6000 bbl,LNG,GAIL,,
+T04,Truck,Truck GJ-44,22.309,72.136,En Route,8000 bbl,Gas Condensate,ONGC,,
+T05,Truck,Truck TN-22,13.082,80.270,Available,9000 bbl,Crude Oil,CPCL,,
+T06,Truck,Truck KA-09,12.914,74.856,Available,7000 bbl,Crude Oil,MRPL,,
+T07,Truck,Truck UP-80,28.404,77.850,En Route,10000 bbl,Crude Oil,IOC,,
+T08,Truck,Truck OD-15,20.322,86.614,Loading,6000 bbl,LNG,Adani,,
+S01,Ship,Vessel Saraswati,16.941,82.214,Anchored,250000 bbl,Crude Oil,SCI,,
+S02,Ship,Vessel Ganga,19.854,72.931,Transit,180000 bbl,Crude Oil,SCI,,
+S03,Ship,Vessel Krishna,20.260,86.831,Loading,120000 bbl,LNG,Petronet LNG,,
+S04,Ship,Vessel Kaveri,9.890,76.150,Transit,300000 bbl,Crude Oil,SCI,,
+S05,Ship,Vessel Narmada,22.150,69.550,Anchored,160000 bbl,Crude Oil,Reliance,,
+R01,Refinery,Kakinada Refinery,16.934,82.237,Operational,200K bpd,Crude Oil,ONGC,,
+R02,Refinery,Jamnagar Refinery,22.455,70.062,Operational,1.24M bpd,Crude Oil,Reliance,,
+R03,Refinery,Mumbai Refinery,19.008,72.843,Operational,160K bpd,Crude Oil,HPCL,,
+R04,Refinery,Mathura Refinery,27.479,77.673,Operational,160K bpd,Crude Oil,IOC,,
+R05,Refinery,Panipat Refinery,29.390,76.970,Operational,300K bpd,Crude Oil,IOC,,
+R06,Refinery,Vadinar Refinery,22.390,69.720,Operational,400K bpd,Crude Oil,Nayara,,
+R07,Refinery,Kochi Refinery,9.960,76.280,Maintenance,310K bpd,Crude Oil,BPCL,,
+R08,Refinery,Paradip Refinery,20.250,86.660,Operational,300K bpd,Crude Oil,IOC,,
+R09,Refinery,Chennai Refinery,13.160,80.300,Operational,210K bpd,Crude Oil,CPCL,,
+R10,Refinery,Mangalore Refinery,12.950,74.810,Operational,300K bpd,Crude Oil,MRPL,,
+ST01,Storage,Vizag Terminal,17.688,83.218,Operational,2M bbl,Crude Oil,IOC,,
+ST02,Storage,Mangala Terminal,27.021,70.912,Operational,750K bbl,Crude Oil,Cairn India,,
+ST03,Storage,Hazira Terminal,21.118,72.617,Operational,500K bbl,LNG + Crude,Shell/TOTAL,,
+ST04,Storage,Dhamra Terminal,20.470,86.823,Operational,300K bbl,LNG,Adani,,
+ST05,Storage,Dahej LNG Terminal,21.710,72.530,Operational,1.2M bbl,LNG,Petronet LNG,,
+ST06,Storage,Kochi LNG Terminal,9.990,76.230,Operational,900K bbl,LNG,Petronet LNG,,
+ST07,Storage,Mundra Terminal,22.740,69.700,Operational,1.5M bbl,Crude Oil,Adani,,
+W01,Wellhead,KG-D6 Wellhead,16.100,82.200,Producing,45K bopd,Crude + Gas,Reliance,,
+W02,Wellhead,Mangala Wellhead,27.300,71.200,Producing,125K bopd,Crude Oil,Cairn India,,
+W03,Wellhead,Mumbai High North,19.130,71.540,Producing,80K bopd,Crude Oil,ONGC,,
+W04,Wellhead,Mumbai High South,18.900,71.300,Producing,60K bopd,Crude Oil,ONGC,,
+W05,Wellhead,Ravva Wellhead,16.500,82.100,Producing,30K bopd,Crude + Gas,Cairn India,,
+W06,Wellhead,Cauvery Wellhead,11.300,79.900,Shut-in,10K bopd,Crude Oil,ONGC,,
+P01,Pipeline,HBJ Bhopal Node,23.259,77.412,Active,18 MMSCMD,Natural Gas,GAIL,HBJ,3
+P02,Pipeline,DVPL Bavla Node,22.309,72.136,Active,16 MMSCMD,Natural Gas,GAIL,DVPL,2
+P03,Pipeline,GREP Node,16.512,81.643,Active,12 MMSCMD,Natural Gas,GAIL,GREP,2
+PN01,Pipeline,HBJ Hazira Start,21.118,72.617,Active,18 MMSCMD,Natural Gas,GAIL,HBJ,1
+PN02,Pipeline,HBJ Ujjain Node,23.180,75.780,Active,18 MMSCMD,Natural Gas,GAIL,HBJ,2
+PN03,Pipeline,HBJ Vijaipur Node,24.430,77.350,Active,18 MMSCMD,Natural Gas,GAIL,HBJ,4
+PN04,Pipeline,HBJ Jagdishpur End,26.550,81.550,Active,18 MMSCMD,Natural Gas,GAIL,HBJ,5
+PN05,Pipeline,DVPL Dahej Start,21.710,72.530,Active,16 MMSCMD,Natural Gas,GAIL,DVPL,1
+PN06,Pipeline,DVPL Chittorgarh,24.880,74.630,Active,16 MMSCMD,Natural Gas,GAIL,DVPL,3
+PN07,Pipeline,DVPL Kota End,25.180,75.830,Active,16 MMSCMD,Natural Gas,GAIL,DVPL,4
+PN08,Pipeline,GREP Kakinada Start,16.950,82.230,Active,12 MMSCMD,Natural Gas,GAIL,GREP,1
+PN09,Pipeline,GREP Vijayawada End,16.510,80.650,Active,12 MMSCMD,Natural Gas,GAIL,GREP,3
+PN10,Pipeline,SMPL Salaya Start,22.310,69.600,Active,25 MMTPA,Crude Oil,IOC,SMPL,1
+PN11,Pipeline,SMPL Viramgam,23.120,72.040,Active,25 MMTPA,Crude Oil,IOC,SMPL,2
+PN12,Pipeline,SMPL Chaksu,26.600,75.950,Active,25 MMTPA,Crude Oil,IOC,SMPL,3
+PN13,Pipeline,SMPL Mathura End,27.479,77.673,Active,25 MMTPA,Crude Oil,IOC,SMPL,4

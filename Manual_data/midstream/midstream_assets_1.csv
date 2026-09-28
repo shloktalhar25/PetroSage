@@ -1,0 +1,15 @@
+AssetType,AssetName,Latitude,Longitude,Capacity_Status,Description
+Refinery,Houston Refining Co.,29.72,-95.25,Active - 300k bpd,Downstream Target A
+Refinery,Beaumont Refinery,30.08,-94.1,Active - 250k bpd,Downstream Target B
+Storage Terminal,Permian Junction Storage,31.9,-102.1,75% Full - 2M bbls,Upstream Gathering Point
+Storage Terminal,Eagle Ford Holding Hub,28.7,-98.2,40% Full - 1M bbls,Intermediate Storage
+Storage Terminal,Galveston Coast Terminal,29.3,-94.8,90% Full - 5M bbls,Marine Export Hub
+Truck,Fleet Truck #104,30.5,-97.7,En Route (Oil),"Nearest to Austin, heading East"
+Truck,Fleet Truck #208,29.5,-98.5,Idle (Gas),Located near San Antonio
+Ship,Tanker Navigator VII,28.5,-94.0,Anchored (Crude),Waiting for berth at Galveston
+Ship,LNG Carrier Horizon,28.1,-93.5,En Route (LNG),Incoming from international waters
+Pipeline Node,Permian-to-Houston Mainline Start,31.9,-102.1,Operating at 95% capacity,Crude Line Line A
+Pipeline Node,Permian-to-Houston Mainline Midpoint,30.8,-98.5,Operating at 95% capacity,Crude Line Line A
+Pipeline Node,Permian-to-Houston Mainline End,29.72,-95.25,Operating at 95% capacity,Crude Line Line A
+Pipeline Node,Eagle-Ford-to-Houston Segment 1,28.7,-98.2,Operating at 70% capacity,Gas Line Line B
+Pipeline Node,Eagle-Ford-to-Houston Segment 2,29.72,-95.25,Operating at 70% capacity,Gas Line Line B

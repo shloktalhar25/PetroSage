@@ -1,0 +1,13 @@
+GOVERNMENT OF INDIA MARITIME & OFFSHORE OIL & GAS REGULATIONS (COMPLIANCE SUMMARY)
+
+1. TERRITORIAL WATERS, CONTINENTAL SHELF, EEZ & MARITIME ZONES ACT 1976 (SECTION 7(5))
+- Jurisdiction: The Exclusive Economic Zone (EEZ) extends beyond the territorial waters (12 NM) up to 200 Nautical Miles (370.4 km) from the baseline.
+- Mandatory Requirement: Under Section 7(5), no person or enterprise (including Indian or foreign corporations) shall construct, operate, or maintain any artificial island, offshore drilling rig, platform, or installation in the EEZ without explicit authorization from the Central Government (Ministry of Petroleum & Natural Gas, Ministry of Defense, and DG Shipping).
+- Penalty for Violation: Unauthorized construction beyond 12 NM / 22 km is subject to immediate cease-and-desist orders, seizure of assets, and heavy fines.
+
+2. MoEFCC ENVIRONMENT IMPACT ASSESSMENT (EIA) NOTIFICATION 2006 & CRZ NOTIFICATION 2019
+- Category A Requirement: All offshore and onshore oil & gas exploration, development, and production projects require mandatory prior Environmental Clearance (EC) from MoEFCC Expert Appraisal Committee (EAC) regardless of distance from shore.
+- EEZ Exemption Nullity: The 12 NM / 22 km distance does NOT exempt any rig from EIA clearance.
+
+3. WATER (PREVENTION AND CONTROL OF POLLUTION) ACT 1974 & CPCB MARINE DISCHARGE NORMS
+- Zero Untreated Discharge: Discharge of untreated produced water or drilling fluids into marine waters is strictly prohibited under CPCB Marine Effluent Standards 2021. Closed-loop treatment is mandatory.

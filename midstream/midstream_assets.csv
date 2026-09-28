@@ -1,0 +1,22 @@
+id,type,name,lat,lng,status,capacity,product,operator,description
+T01,truck,Truck KG-33,16.512,81.643,en_route,8000 bbl,Crude Oil,ONGC,Loaded crude carrier departing from KG Basin wellhead cluster. Currently en route to Kakinada refinery.
+T02,truck,Truck RJ-17,27.021,70.912,available,10000 bbl,Crude Oil,Cairn India,Idle at Mangala Processing Terminal awaiting dispatch instructions.
+T03,truck,Truck MH-05,19.076,72.877,loading,6000 bbl,LNG,GAIL,Loading LNG at Mumbai offshore receiving terminal.
+T04,truck,Truck GJ-44,22.309,72.136,en_route,8000 bbl,Natural Gas Condensate,ONGC,En route from Hazira terminal to Ahmedabad distribution hub.
+S01,ship,Vessel Saraswati,16.941,82.214,anchored,250000 bbl,Crude Oil,SCI,VLCC anchored at Kakinada anchorage awaiting berth allocation. Carrying KG Basin crude.
+S02,ship,Vessel Ganga,19.854,72.931,transit,180000 bbl,Crude Oil,SCI,In transit from Mumbai High to Jamnagar JNPT terminal. ETA 14 hrs.
+S03,ship,Vessel Krishna,20.260,86.831,loading,120000 bbl,LNG,Petronet LNG,Loading LNG at Dhamra LNG terminal for export to Japan.
+R01,refinery,Kakinada Refinery,16.934,82.237,operational,200000 bpd,Crude Oil,ONGC,Integrated refinery-cum-petrochemical complex. Currently at 87% utilization. Priority intake for KG Basin crude.
+R02,refinery,Jamnagar Refinery,22.455,70.062,operational,1240000 bpd,Crude Oil,Reliance Industries,World's largest refinery complex. DTA + SEZ units. Currently accepting VLCC offloads.
+R03,refinery,Mumbai Refinery,19.008,72.843,operational,160000 bpd,Crude Oil,HPCL,Coastal refinery at Mahul. Intake primarily from Mumbai High offshore production.
+R04,refinery,Mathura Refinery,27.479,77.673,operational,160000 bpd,Crude Oil,IOC,Landlocked refinery supplied via HBCPL pipeline from Salaya. Currently at 92% utilization.
+P01,pipeline,HBJ Pipeline Node,23.259,77.412,active,18 MMSCMD,Natural Gas,GAIL,Hazira-Bijaipur-Jagdishpur pipeline midpoint node. Main gas trunk line serving central India.
+P02,pipeline,DVPL Node,22.309,72.136,active,16 MMSCMD,Natural Gas,GAIL,Dahej-Vijaypur Pipeline node at Ankleshwar. Key distribution switching point for Gujarat grid.
+P03,pipeline,GREP Node,16.512,81.643,active,12 MMSCMD,Natural Gas,GAIL,Godavari-Rajahmundry-Eluru-Palakollu pipeline origination node at KG Basin.
+ST01,storage,Vizag Storage Terminal,17.688,83.218,operational,2000000 bbl,Crude Oil,IOC,Strategic petroleum reserve + commercial crude storage. Cavern and above-ground tanks. Currently at 68% fill.
+ST02,storage,Mangala Terminal,27.021,70.912,operational,750000 bbl,Crude Oil,Cairn India,Central processing terminal for Rajasthan fields. Pipeline dispatch hub to Salaya.
+ST03,storage,Hazira Terminal,21.118,72.617,operational,500000 bbl,LNG + Crude,Shell/TOTAL,Multipurpose terminal. LNG regasification + crude handling. Serves as HBJ pipeline origin.
+ST04,storage,Dhamra Terminal,20.470,86.823,operational,300000 bbl,LNG,Adani,East coast LNG import terminal. Connected to IOML pipeline for odisha/WB grid.
+W01,wellhead,KG-D6 Wellhead,16.100,82.200,producing,45000 bopd,Crude Oil,Reliance,Deepwater KG-D6 block wellhead cluster. Main subsea manifold. Production 45000 bopd + 10 MMSCMD gas.
+W02,wellhead,Mangala Wellhead,27.300,71.200,producing,125000 bopd,Crude Oil,Cairn India,Rajasthan block onshore producing wells cluster. Largest onshore discovery in India.
+W03,wellhead,Mumbai High North,19.130,71.540,producing,80000 bopd,Crude Oil,ONGC,Offshore Mumbai High North platform cluster. Mature field with EOR operations ongoing.
