@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { postQuery } from '../api';
+import Markdown from '../Markdown';
 import { MapContainer, TileLayer, Marker, Popup, Polygon } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -216,6 +218,7 @@ export default function Upstream() {
     }
   ]);
   const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
   const allItems = useMemo(() => [...ACTIVE_ASSETS, ...FUTURE_LEADS], []);
 
@@ -228,44 +231,18 @@ export default function Upstream() {
 
   const handleChatSend = (e) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim() || isChatLoading) return;
     const q = chatInput;
     setChatInput('');
     setChatMessages(prev => [...prev, { role: 'user', text: q }]);
 
-    setTimeout(() => {
-      let reply = { text: '', refs: [] };
-      const qLower = q.toLowerCase();
-
-      if (qLower.includes('mahanadi') || qLower.includes('lead-01')) {
-        reply = {
-          text: `**Mahanadi Deepwater Discovery (LEAD-01)** was reported by DGH & EnergyWorld (Sept 2026). Estimated potential: **1.4 Billion Barrels OE** operated by ONGC at 4,800m sub-seabed depth.`,
-          refs: [{ label: 'upstream_news_leads.txt', loc: '[LEAD-01]' }, { label: 'DGH-2026-Release.pdf', loc: 'p. 4' }]
-        };
-      } else if (qLower.includes('andaman') || qLower.includes('gas lead')) {
-        reply = {
-          text: `**Andaman Offshore Frontier Lead (LEAD-03)** is a deepwater natural gas prospect estimated at **2.1 TCF Gas** under OALP IX licensing. High-res 3D seismic processing currently underway.`,
-          refs: [{ label: 'upstream_news_leads.txt', loc: '[LEAD-03]' }, { label: 'MoPNG-OALP-IX.pdf', loc: 'p. 12' }]
-        };
-      } else if (qLower.includes('barmer') || qLower.includes('tight oil')) {
-        reply = {
-          text: `**Barmer Deep Tight Oil Lead (LEAD-02)** identified by Cairn Oil & Gas contains **450 Million Barrels Tight Oil** in Dharvi Dungar formation. Hydraulic fracturing pilot planned.`,
-          refs: [{ label: 'upstream_news_leads.txt', loc: '[LEAD-02]' }]
-        };
-      } else if (qLower.includes('rig') || qLower.includes('deepwater frontier')) {
-        reply = {
-          text: `**Rig Deepwater Frontier (KG-OSN-2024/1)** is actively drilling at **3,850m depth** (Target: 4,200m). ROP: 14.2 m/hr. Current production: 45,000 BOPD + 10.2 MMSCMD gas.`,
-          refs: [{ label: 'upstream_operations.csv', loc: 'Row 1' }]
-        };
-      } else {
-        reply = {
-          text: `RAG search results for **"${q}"**:\nIndexed 4 current active rigs, 2 proven reservoirs, and 4 news-scraped future exploration leads (Mahanadi 1.4B bbls, Andaman 2.1 TCF, Barmer 450M bbls).`,
-          refs: [{ label: 'upstream_news_leads.txt', loc: 'All Leads' }, { label: 'upstream_operations.csv', loc: 'Telemetry' }]
-        };
-      }
-
-      setChatMessages(prev => [...prev, { role: 'assistant', ...reply }]);
-    }, 700);
+    setIsChatLoading(true);
+    postQuery('/api/upstream/ai', q)
+      .catch(err => ({ text: `Request failed: ${err.message}`, refs: [] }))
+      .then(reply => {
+        setChatMessages(prev => [...prev, { role: 'assistant', ...reply }]);
+        setIsChatLoading(false);
+      });
   };
 
   return (
@@ -496,7 +473,7 @@ export default function Upstream() {
                   lineHeight: 1.45,
                   boxShadow: 'var(--shadow-sm)'
                 }}>
-                  {m.text}
+                  {m.role === 'user' ? m.text : <Markdown>{m.text}</Markdown>}
                   {m.refs && m.refs.length > 0 && (
                     <div style={{ marginTop: 6, paddingTop: 4, borderTop: '1px solid #e2e8f0', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       {m.refs.map((r, rIdx) => (
@@ -508,6 +485,9 @@ export default function Upstream() {
                   )}
                 </div>
               ))}
+              {isChatLoading && (
+                <div style={{ alignSelf: 'flex-start', fontSize: '0.72rem', color: '#64748b' }}>Searching indexed data…</div>
+              )}
             </div>
 
             {/* Query Form */}
@@ -519,7 +499,7 @@ export default function Upstream() {
                 onChange={(e) => setChatInput(e.target.value)}
                 style={{ flex: 1, padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', fontSize: '0.75rem' }}
               />
-              <button type="submit" className="btn btn-primary" style={{ padding: '0.4rem 0.75rem' }}>
+              <button type="submit" disabled={isChatLoading} className="btn btn-primary" style={{ padding: '0.4rem 0.75rem' }}>
                 <Send size={13} />
               </button>
             </form>

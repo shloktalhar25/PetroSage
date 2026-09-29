@@ -12,10 +12,34 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::DevDbError;
 use crate::index::hnsw::{HnswConfig, HnswIndex};
-use crate::index::Index;
+use crate::distance::cosine_distance;
+use crate::index::{Index, VectorAccessor};
 use crate::payload::{Filter, PayloadStore, Value};
 use crate::persistence;
 use crate::vector_store::VectorStore;
+
+/// Exact top-k over only the points whose payload matches `filter`.
+///
+/// Post-filtering ANN candidates loses recall when the filter matches a small
+/// slice of the collection (the graph walk never reaches it), so a filtered
+/// query scores every matching point directly instead.
+fn exact_filtered_search(
+    query: &[f32],
+    top_k: usize,
+    node_count: usize,
+    vectors: &dyn VectorAccessor,
+    payloads: &PayloadStore,
+    filter: &Filter,
+    internal_to_id: &[u64],
+) -> Vec<(u64, f32)> {
+    let mut hits: Vec<(u64, f32)> = (0..node_count)
+        .filter(|&i| payloads.get(i).is_some_and(|p| filter.matches(p)))
+        .map(|i| (internal_to_id[i], cosine_distance(query, vectors.get_vector(i))))
+        .collect();
+    hits.sort_by(|a, b| a.1.total_cmp(&b.1));
+    hits.truncate(top_k);
+    hits
+}
 
 /// Configuration for a new collection.
 #[derive(Debug, Clone)]
@@ -205,22 +229,24 @@ impl MmapCollection {
         let inv_norm = 1.0 / norm;
         let normalized_query: Vec<f32> = query.iter().map(|&x| x * inv_norm).collect();
 
-        let fetch_k = match &filter {
-            Some(_) => top_k * 4,
-            None => top_k,
-        };
-
         let vectors = self.get_vector_store();
-        let index = self.get_hnsw_index();
+        if let Some(f) = &filter {
+            return Ok(exact_filtered_search(
+                &normalized_query,
+                top_k,
+                self.node_count,
+                &vectors,
+                &self.payloads,
+                f,
+                &self.internal_to_id,
+            ));
+        }
 
-        let candidates = index.search(&normalized_query, fetch_k, &vectors);
+        let index = self.get_hnsw_index();
+        let candidates = index.search(&normalized_query, top_k, &vectors);
 
         let results: Vec<(u64, f32)> = candidates
             .into_iter()
-            .filter(|r| match &filter {
-                None => true,
-                Some(f) => self.payloads.get(r.index).is_some_and(|p| f.matches(p)),
-            })
             .take(top_k)
             .map(|r| {
                 let ext_id = self.internal_to_id[r.index];
@@ -324,11 +350,6 @@ impl Collection {
 
                 let normalized_query = data.vectors.normalize_query(query)?;
 
-                let fetch_k = match &filter {
-                    Some(_) => top_k * 4,
-                    None => top_k,
-                };
-
                 let CollectionData {
                     ref vectors,
                     ref mut index,
@@ -337,14 +358,22 @@ impl Collection {
                     ..
                 } = *data;
 
-                let candidates = index.search(&normalized_query, fetch_k, vectors);
+                if let Some(f) = &filter {
+                    return Ok(exact_filtered_search(
+                        &normalized_query,
+                        top_k,
+                        vectors.len(),
+                        vectors,
+                        payloads,
+                        f,
+                        internal_to_id,
+                    ));
+                }
+
+                let candidates = index.search(&normalized_query, top_k, vectors);
 
                 let results: Vec<(u64, f32)> = candidates
                     .into_iter()
-                    .filter(|r| match &filter {
-                        None => true,
-                        Some(f) => payloads.get(r.index).is_some_and(|p| f.matches(p)),
-                    })
                     .take(top_k)
                     .map(|r| {
                         let ext_id = internal_to_id[r.index];

@@ -148,6 +148,46 @@ fn filtered_search_correctness() {
     assert_eq!(results[0].0, 3);
 }
 
+/// A filter matching a tiny slice of a large collection must still return every
+/// match, even when the query is far from that slice (post-filtering ANN
+/// candidates would return nothing here).
+#[test]
+fn filtered_search_finds_rare_points_far_from_query() {
+    let mut db = Collection::new(CollectionConfig {
+        dim: 3,
+        ..Default::default()
+    });
+
+    let payload = |tag: &str| {
+        let mut p = HashMap::new();
+        p.insert("country".to_string(), Value::String(tag.to_string()));
+        p
+    };
+
+    // 2000 "common" points clustered around the query direction.
+    for i in 0..2000u64 {
+        let jitter = (i as f32) * 1e-4;
+        db.insert(i, &[1.0, jitter, 0.0], payload("common")).unwrap();
+    }
+    // 3 "rare" points pointing the opposite way.
+    for i in 0..3u64 {
+        db.insert(10_000 + i, &[-1.0, 0.0, 0.1 * (i as f32 + 1.0)], payload("rare"))
+            .unwrap();
+    }
+
+    let filter = Filter {
+        conditions: vec![Condition::Equals(
+            "country".into(),
+            Value::String("rare".into()),
+        )],
+    };
+    let results = db.search(&[1.0, 0.0, 0.0], 20, Some(filter)).unwrap();
+
+    assert_eq!(results.len(), 3);
+    assert!(results.iter().all(|(id, _)| *id >= 10_000));
+    assert!(results.windows(2).all(|w| w[0].1 <= w[1].1), "sorted by distance");
+}
+
 /// Verifies save/load round trip preserves data and search results.
 #[test]
 fn persistence_round_trip() {

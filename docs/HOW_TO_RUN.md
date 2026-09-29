@@ -103,7 +103,33 @@ In the REPL:
 Answers cite `[source_file, Country, Page/Row N]` for every fact, since with many source
 documents a bare page number is ambiguous.
 
-## 6. Run the tests
+## 6. Run the web app (API + frontend)
+
+The React UI talks to a FastAPI server (`api/server.py`) that wraps `RAGPipeline`. The Vite dev
+server proxies `/api/*` to it (see `frontend/vite.config.js`), so there is no CORS setup.
+
+```bash
+# terminal 2 - from the repo root, venv activated, DevDB already running
+uvicorn api.server:app --port 8000
+
+# terminal 3
+cd frontend && npm install && npm run dev      # http://localhost:5173
+```
+
+`curl localhost:8000/api/health` reports `{"api":"ok","devdb":true,...}` when everything is wired.
+The API must be started from the repo root (config paths are relative).
+
+| Endpoint | Used by |
+|---|---|
+| `POST /api/rag` | Market & Asset Search page |
+| `POST /api/rag/market` | Intelligence Review page |
+| `POST /api/upstream/ai` | Upstream page chat |
+| `POST /api/midstream/ai` | Midstream page chat (highlights assets on the map) |
+
+Not wired to the backend (still static UI): the Regulations page, the Data Extraction page, the
+result cards on Market & Asset Search, and the map/asset data on Upstream and Midstream.
+
+## 7. Run the tests
 
 ```bash
 pytest

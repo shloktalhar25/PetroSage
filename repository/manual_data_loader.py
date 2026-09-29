@@ -19,6 +19,7 @@ from core.console import console
 from data.pdf_loader import extract_text_blocks
 from data.csv_loader import load_csv
 from data.excel_loader import load_excel
+from data.text_loader import load_text
 
 _SKIP_DIR_NAMES = {"zips"}
 
@@ -97,6 +98,8 @@ def load_file(path: Path) -> Optional[List[Dict[str, Any]]]:
         return extract_text_blocks(path)
     if suffix == ".csv":
         return load_csv(path)
+    if suffix == ".txt":
+        return load_text(path)
     if suffix in (".xlsx", ".xlsm"):
         return load_excel(path)
 

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { postQuery, errorAnswer } from '../api';
+import Markdown from '../Markdown';
 import {
   File, CheckCircle2, ChevronDown, ChevronUp, X,
   Send, Loader2, Sparkles, RefreshCw, Clock, Database,
@@ -72,24 +74,6 @@ const FAQS = [
   },
 ];
 
-const AI_CHAT_RESPONSE = (query) => ({
-  paragraphs: [
-    {
-      text: `Based on the latest indexed market data (September 2026), ${query.toLowerCase().includes('natural gas') ? 'European natural gas prices at the TTF hub have risen to $11.20/mmbtu, driven by reduced Norwegian supply and increased Asian competition for LNG cargoes. Henry Hub (US) remains more subdued at $2.85/mmbtu due to robust domestic production.' : 'the oil and gas market is showing a supply deficit of approximately 1.8 mbpd globally. Brent Crude stands at $82.45/bbl with OPEC+ cuts of 2.2 mbpd extended through Q4 2026.'}`,
-      citeIds: [1, 3],
-    },
-    {
-      text: `OPEC's Monthly Oil Market Report indicates that non-OPEC supply growth, led by the United States, Brazil, and Guyana, is projected at 1.4 mbpd for full-year 2026. However, this growth is insufficient to offset the OPEC+ production restraint currently in place.`,
-      citeIds: [4],
-    },
-    {
-      text: `The IEA Oil Market Report flags geopolitical risk premiums of approximately $3–5/bbl embedded in current Brent prices, tied to Middle East tensions and uncertainty in the Russia-Ukraine corridor affecting European energy flows.`,
-      citeIds: [3, 5],
-    },
-  ],
-  meta: { time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }), citations: 5 },
-});
-
 /* ─── Small helpers ─────────────────────────────────────────── */
 function FileIcon({ type }) {
   return type === 'xlsx'
@@ -124,13 +108,13 @@ export default function Dashboard() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isChatLoading]);
 
-  const handleCitationClick = (e, ids) => {
+  const handleCitationClick = (e, ids, sources) => {
     e.stopPropagation();
     const rect = e.target.getBoundingClientRect();
     setCitationPopup(prev =>
       prev && JSON.stringify(prev.ids) === JSON.stringify(ids)
         ? null
-        : { ids, x: rect.left, y: rect.bottom + 8 }
+        : { ids, sources, x: rect.left, y: rect.bottom + 8 }
     );
   };
 
@@ -148,11 +132,12 @@ export default function Dashboard() {
     setChatMessages(prev => [...prev, { role: 'user', text: q }]);
     setIsChatLoading(true);
 
-    // ← Replace with: fetch('/api/rag/market', { method: 'POST', body: JSON.stringify({ query: q }) })
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, { role: 'assistant', ...AI_CHAT_RESPONSE(q) }]);
-      setIsChatLoading(false);
-    }, 1800);
+    postQuery('/api/rag/market', q)
+      .catch(errorAnswer)
+      .then(answer => {
+        setChatMessages(prev => [...prev, { role: 'assistant', ...answer }]);
+        setIsChatLoading(false);
+      });
   };
 
   const renderAssistantMessage = (msg) => (
@@ -162,16 +147,16 @@ export default function Dashboard() {
         <span className="font-semibold text-sm">Market Intelligence</span>
       </div>
       {msg.paragraphs?.map((p, i) => (
-        <p key={i} className="ai-text" style={{ marginTop: i > 0 ? '0.75rem' : 0 }}>
-          {p.text}
+        <div key={i} className="ai-text" style={{ marginTop: i > 0 ? '0.75rem' : 0 }}>
+          <Markdown>{p.text}</Markdown>
           {p.citeIds?.length > 0 && (
-            <CitationBtn ids={p.citeIds} onClick={(e) => handleCitationClick(e, p.citeIds)} />
+            <CitationBtn ids={p.citeIds} onClick={(e) => handleCitationClick(e, p.citeIds, msg.sources)} />
           )}
-        </p>
+        </div>
       ))}
       <div className="ai-meta">
         <span>{msg.meta?.time}</span>
-        <span className="ai-meta-link" onClick={(e) => handleCitationClick(e, SOURCES.map(s => s.id))}>
+        <span className="ai-meta-link" onClick={(e) => handleCitationClick(e, (msg.sources || []).map(s => s.id), msg.sources)}>
           Citations +{msg.meta?.citations}
         </span>
       </div>
@@ -510,13 +495,13 @@ export default function Dashboard() {
           <div style={{ padding: '0.45rem 0.75rem', fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-medium)', borderBottom: '1px solid var(--border-color)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
             Sources
           </div>
-          {SOURCES.filter(s => citationPopup.ids.includes(s.id)).map(src => (
+          {(citationPopup.sources || []).filter(s => citationPopup.ids.includes(s.id)).map(src => (
             <button key={src.id} className="citation-source-row" onClick={() => openDocViewer(src)}>
               <File size={12} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
               <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <strong>[{src.id}]</strong>&nbsp;{src.shortName}
               </span>
-              <span className="text-light" style={{ fontSize: '0.72rem', flexShrink: 0 }}>pg. {src.pages.join(', ')}</span>
+              <span className="text-light" style={{ fontSize: '0.72rem', flexShrink: 0 }}>{src.unit || 'pg.'} {src.pages.join(', ')}</span>
             </button>
           ))}
         </div>

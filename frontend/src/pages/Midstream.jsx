@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { postQuery } from '../api';
+import Markdown from '../Markdown';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -147,115 +149,6 @@ function MapController({ flyTo }) {
   return null;
 }
 
-/* ─── AI Chat Responses ─────────────────────────────────────── */
-const buildAIResponse = (query, assets) => {
-  const q = query.toLowerCase();
-
-  if (q.includes('t01') || (q.includes('truck') && (q.includes('kg') || q.includes('33')))) {
-    const t = assets.find(a => a.id === 'T01');
-    const r = assets.find(a => a.id === 'R01');
-    return {
-      text: `**Truck KG-33 (T01)** is currently en route carrying 8,000 bbl of crude oil from the KG-D6 wellhead cluster. The nearest and most optimal destination is **Kakinada Refinery (R01)** operated by ONGC.`,
-      detail: `Kakinada Refinery is currently at 87% utilization with capacity for KG Basin crude intake. Distance from current position: ~42 km. Estimated arrival: 2.5 hours. The refinery has active berth allocations for regional production.`,
-      highlight: ['T01', 'R01'],
-      route: { from: t, to: r, color: '#facc15' },
-      flyTo: { lat: 16.7, lng: 82.0, zoom: 9 },
-      refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'Row T01, R01' }, { id: 2, label: 'KG-Basin-Ops-2026.pdf', loc: 'p. 14' }],
-    };
-  }
-
-  if (q.includes('t05') || (q.includes('truck') && (q.includes('tn') || q.includes('chennai')))) {
-    const t = assets.find(a => a.id === 'T05');
-    const r = assets.find(a => a.id === 'R09');
-    return {
-      text: `**Truck TN-22 (T05)** is available at Chennai Port Depot with 9,000 bbl crude capacity. Optimal destination: **Chennai Refinery (R09)** operated by CPCL.`,
-      detail: `Chennai Refinery (Manali complex) is operating at 210K bpd. Distance: ~12 km north via Port Expressway. Immediate dispatch recommended to fulfill local intake quota.`,
-      highlight: ['T05', 'R09'],
-      route: { from: t, to: r, color: '#facc15' },
-      flyTo: { lat: 13.12, lng: 80.28, zoom: 10 },
-      refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'Row T05, R09' }],
-    };
-  }
-
-  if (q.includes('smpl') || q.includes('salaya')) {
-    return {
-      text: `**SMPL (Salaya-Mathura Pipeline)** is a 25 MMTPA crude oil cross-country arterial operated by IOC:`,
-      detail: `• **PN10**: Salaya Start (Gulf of Kutch crude import hub)\n• **PN11**: Viramgam switching terminal\n• **PN12**: Chaksu tank farm (Rajasthan)\n• **PN13**: Mathura Refinery terminal feed\nCurrently operating cleanly at rated capacity evacuating imported VLCC crude.`,
-      highlight: ['PN10','PN11','PN12','PN13','R04'],
-      route: null,
-      flyTo: { lat: 24.5, lng: 73.5, zoom: 6 },
-      refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'PN10-PN13' }],
-    };
-  }
-
-  if (q.includes('t02') || (q.includes('truck') && q.includes('rj'))) {
-    const t = assets.find(a => a.id === 'T02');
-    const r = assets.find(a => a.id === 'R04');
-    return {
-      text: `**Truck RJ-17 (T02)** is currently idle at Mangala Terminal with 10,000 bbl crude capacity. The optimal dispatch is to **Mathura Refinery (R04)** via the Salaya-Mathura (SMPL) pipeline corridor.`,
-      detail: `Mathura Refinery (IOC) is at 92% utilization and actively sourcing Rajasthan crude. Road distance via NH-11: ~580 km. Recommended: transfer crude to the SMPL pipeline at Salaya for cost-efficient transport.`,
-      highlight: ['T02', 'ST02', 'R04'],
-      route: { from: t, to: r, color: '#facc15' },
-      flyTo: { lat: 27.2, lng: 71.5, zoom: 7 },
-      refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'Row T02, R04' }, { id: 3, label: 'Rajasthan-Ops-Report.pdf', loc: 'p. 7' }],
-    };
-  }
-
-  if (q.includes('nearest refinery') || q.includes('closest refinery')) {
-    return {
-      text: `Based on updated asset positions across 8 fleet trucks and 10 operational refineries:`,
-      detail: `• **T01 (KG-33)** → Kakinada R01 (42 km) ✓ RECOMMENDED\n• **T03 (MH-05)** → Mumbai R03 (12 km) ✓ RECOMMENDED\n• **T05 (TN-22)** → Chennai R09 (12 km) ✓ RECOMMENDED\n• **T06 (KA-09)** → Mangalore R10 (8 km) ✓ RECOMMENDED\n• **T07 (UP-80)** → Mathura R04 (45 km) ✓ EN ROUTE`,
-      highlight: ['T01','T03','T05','T06','T07','R01','R03','R09','R10','R04'],
-      route: null,
-      flyTo: { lat: 20.5, lng: 76.5, zoom: 5 },
-      refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'Trucks & Refineries' }],
-    };
-  }
-
-  if (q.includes('storage') || q.includes('store') || q.includes('terminal')) {
-    return {
-      text: `There are **7 storage terminals** tracked in the updated dataset:`,
-      detail: `• **ST01 (Vizag)** — 2M bbl Crude (IOC)\n• **ST02 (Mangala)** — 750K bbl Crude (Cairn India)\n• **ST03 (Hazira)** — 500K bbl LNG+Crude (Shell/TOTAL)\n• **ST04 (Dhamra)** — 300K bbl LNG (Adani)\n• **ST05 (Dahej)** — 1.2M bbl LNG (Petronet LNG) ← Largest LNG terminal\n• **ST06 (Kochi)** — 900K bbl LNG (Petronet LNG)\n• **ST07 (Mundra)** — 1.5M bbl Crude (Adani)`,
-      highlight: ['ST01','ST02','ST03','ST04','ST05','ST06','ST07'],
-      route: null,
-      flyTo: { lat: 20.0, lng: 76.0, zoom: 5 },
-      refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'ST01-ST07' }, { id: 4, label: 'Terminal-Capacity-Report.pdf', loc: 'p. 3' }],
-    };
-  }
-
-  if (q.includes('pipeline')) {
-    return {
-      text: `**4 cross-country pipeline networks** are tracked:`,
-      detail: `• **HBJ Pipeline** — 18 MMSCMD (GAIL). Hazira → Ujjain → Bhopal → Vijaipur → Jagdishpur.\n• **DVPL Pipeline** — 16 MMSCMD (GAIL). Dahej → Bavla → Chittorgarh → Kota.\n• **GREP Pipeline** — 12 MMSCMD (GAIL). Kakinada → KG Basin → Vijayawada.\n• **SMPL Pipeline** — 25 MMTPA Crude (IOC). Salaya → Viramgam → Chaksu → Mathura.`,
-      highlight: ['HBJ','DVPL','GREP','SMPL'],
-      route: null,
-      flyTo: { lat: 21.0, lng: 76.0, zoom: 5 },
-      refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'Pipeline Nodes' }, { id: 5, label: 'GAIL-Pipeline-Network.pdf', loc: 'p. 22' }],
-    };
-  }
-
-  if (q.includes('ship') || q.includes('vessel') || q.includes('vlcc')) {
-    return {
-      text: `**5 maritime vessels** actively tracked:`,
-      detail: `• **S01 (Saraswati)** — 250K bbl VLCC, anchored off Kakinada\n• **S02 (Ganga)** — 180K bbl, in transit to Jamnagar\n• **S03 (Krishna)** — 120K bbl LNG, loading at Dhamra\n• **S04 (Kaveri)** — 300K bbl Supertanker, in transit near Kochi\n• **S05 (Narmada)** — 160K bbl Crude, anchored at Gulf of Kutch`,
-      highlight: ['S01','S02','S03','S04','S05'],
-      route: null,
-      flyTo: { lat: 18.0, lng: 77.0, zoom: 5 },
-      refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'S01-S05' }],
-    };
-  }
-
-  return {
-    text: `Analysed updated midstream dataset for: **"${query}"**`,
-    detail: `Current Live Fleet & Infrastructure:\n• 8 Trucks (T01–T08 across AP, RJ, MH, GJ, TN, KA, UP, OD)\n• 5 Vessels (S01–S05 including supertankers & LNG carriers)\n• 10 Refineries (R01–R10, total ~3.6M bpd capacity)\n• 7 Storage Terminals (ST01–ST07)\n• 4 Major Pipelines (HBJ, DVPL, GREP, SMPL)\n• 6 Producing/Shut-in Wellheads (W01–W06)\n\nTry asking: "Show SMPL pipeline" or "Which refinery for Truck TN-22?"`,
-    highlight: [],
-    route: null,
-    flyTo: { lat: 20.5, lng: 76.5, zoom: 5 },
-    refs: [{ id: 1, label: 'midstream_assets_final.csv', loc: 'All 53 Assets' }],
-  };
-};
-
-/* ─── Main Component ─────────────────────────────────────────── */
 export default function Midstream() {
   const [visibleTypes, setVisibleTypes] = useState(
     Object.fromEntries(Object.keys(TYPE_CONFIG).map(k => [k, true]))
@@ -287,15 +180,15 @@ export default function Midstream() {
     setChatMessages(prev => [...prev, { role: 'user', text: q }]);
     setIsChatLoading(true);
 
-    // ← Replace with fetch('/api/midstream/ai', { method:'POST', body: JSON.stringify({ query: q }) })
-    setTimeout(() => {
-      const resp = buildAIResponse(q, ASSETS);
-      setChatMessages(prev => [...prev, { role: 'assistant', ...resp }]);
-      setHighlightIds(resp.highlight || []);
-      setActiveRoute(resp.route || null);
-      if (resp.flyTo) setFlyTo({ ...resp.flyTo, _t: Date.now() });
-      setIsChatLoading(false);
-    }, 1400);
+    postQuery('/api/midstream/ai', q)
+      .catch(err => ({ text: `Request failed: ${err.message}`, highlight: [], refs: [] }))
+      .then(resp => {
+        setChatMessages(prev => [...prev, { role: 'assistant', ...resp }]);
+        setHighlightIds(resp.highlight || []);
+        setActiveRoute(resp.route || null);
+        if (resp.flyTo) setFlyTo({ ...resp.flyTo, _t: Date.now() });
+        setIsChatLoading(false);
+      });
   };
 
   const handleCitationClick = (e, refs) => {
@@ -311,11 +204,11 @@ export default function Midstream() {
         <Sparkles size={14} className="text-primary" />
         <span className="font-semibold text-sm">Midstream AI</span>
       </div>
-      <p className="ai-text" style={{ fontWeight: 500, marginBottom: '0.5rem' }}>{renderBold(msg.text)}</p>
+      <div className="ai-text" style={{ fontWeight: 500, marginBottom: '0.5rem' }}><Markdown>{msg.text}</Markdown></div>
       {msg.detail && (
-        <p className="ai-text" style={{ whiteSpace: 'pre-line', color: 'var(--text-medium)', fontSize: '0.82rem' }}>
-          {renderBold(msg.detail)}
-        </p>
+        <div className="ai-text" style={{ color: 'var(--text-medium)', fontSize: '0.82rem' }}>
+          <Markdown>{msg.detail}</Markdown>
+        </div>
       )}
       <div className="ai-meta" style={{ marginTop: '0.6rem' }}>
         <span className="ai-meta-link" onClick={(e) => handleCitationClick(e, msg.refs)}>
@@ -330,13 +223,6 @@ export default function Midstream() {
       </div>
     </div>
   );
-
-  const renderBold = (text) => {
-    if (!text) return text;
-    return text.split(/\*\*(.*?)\*\*/g).map((part, i) =>
-      i % 2 === 1 ? <strong key={i}>{part}</strong> : part
-    );
-  };
 
   /* ── JSX ── */
   return (

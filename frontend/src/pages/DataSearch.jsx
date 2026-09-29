@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { postQuery, errorAnswer } from '../api';
+import Markdown from '../Markdown';
 import {
   Search, Bookmark, BookmarkCheck, CheckCircle2, MapPin, Calendar,
   Sparkles, Send, Loader2, FileText, X, ChevronDown,
@@ -62,37 +64,6 @@ const RESULTS = [
   },
 ];
 
-const SOURCES = [
-  { id: 1, name: 'NELP-IX_PSC_KG-DWN.pdf', shortName: 'NELP-IX PSC...', pages: [3, 12, 45, 67] },
-  { id: 2, name: 'Oilfields_Act_1948_amended.pdf', shortName: 'Oilfields Act...', pages: [1, 5, 18] },
-  { id: 3, name: 'PNGRB_CGD_Regulations_2008.pdf', shortName: 'PNGRB Regs...', pages: [8, 22, 39] },
-  { id: 4, name: 'MoPNG_Hydrocarbon_Policy_2021.pdf', shortName: 'MoPNG Policy...', pages: [4, 11, 29] },
-  { id: 5, name: 'DGH_Exploration_Manual_2020.pdf', shortName: 'DGH Manual...', pages: [56, 78, 102] },
-  { id: 6, name: 'IEA_Oil_Gas_Regulation_Global.pdf', shortName: 'IEA Global Reg...', pages: [14, 33] },
-];
-
-const AI_RESPONSE = {
-  paragraphs: [
-    {
-      text: "Under India's NELP regime, Production Sharing Contracts (PSCs) are the primary instrument governing upstream oil and gas exploration and production. The cost recovery mechanism allows operators to recover 100% of exploration and development costs before profit petroleum is shared between the contractor and the Government of India.",
-      citeIds: [1, 4],
-    },
-    {
-      text: "The Oilfields (Regulation and Development) Act, 1948 remains the foundational legislation. It empowers the Central Government to make rules regarding mining leases and the regulation of mining operations for mineral oils. Rules framed under this Act include the Petroleum and Natural Gas Rules, 1959, which specify technical and safety standards.",
-      citeIds: [2],
-    },
-    {
-      text: "The PNGRB Act, 2006 established the Petroleum and Natural Gas Regulatory Board as the downstream regulator. It governs transportation, distribution and marketing of petroleum, petroleum products and natural gas, excluding production. CGD network authorizations are issued under the PNGRB (Authorizing Entities) Regulations, 2008.",
-      citeIds: [3, 6],
-    },
-    {
-      text: "For deepwater and ultra-deepwater blocks, the government introduced a modified fiscal regime under the Hydrocarbon Exploration and Licensing Policy (HELP) in 2016, replacing NELP. Under HELP, contractors pay royalties and a Revenue Sharing model replaces the complex cost-recovery-based PSC, providing greater flexibility for operators.",
-      citeIds: [4, 5],
-    },
-  ],
-  meta: { time: '3:28 AM', citations: 6, webSources: 8 },
-};
-
 /* ─── Citation inline component ─────────────────────────────── */
 function Citation({ ids, onClick }) {
   return (
@@ -151,20 +122,21 @@ export default function DataSearch() {
     setAiMessages(prev => [...prev, { role: 'user', text: q }]);
     setIsSearching(true);
 
-    // ← Replace this mock with: fetch('/api/rag', { method:'POST', body: JSON.stringify({ query: q }) })
-    setTimeout(() => {
-      setAiMessages(prev => [...prev, { role: 'assistant', ...AI_RESPONSE }]);
-      setIsSearching(false);
-    }, 1600);
+    postQuery('/api/rag', q)
+      .catch(errorAnswer)
+      .then(answer => {
+        setAiMessages(prev => [...prev, { role: 'assistant', ...answer }]);
+        setIsSearching(false);
+      });
   };
 
-  const handleCitationClick = (e, ids) => {
+  const handleCitationClick = (e, ids, sources) => {
     e.stopPropagation();
     const rect = e.target.getBoundingClientRect();
     setCitationPopup(prev =>
       prev && JSON.stringify(prev.ids) === JSON.stringify(ids)
         ? null
-        : { ids, x: rect.left, y: rect.bottom + 8 }
+        : { ids, sources, x: rect.left, y: rect.bottom + 8 }
     );
   };
 
@@ -192,20 +164,20 @@ export default function DataSearch() {
       </div>
 
       {msg.paragraphs?.map((p, pi) => (
-        <p key={pi} className="ai-text" style={{ marginTop: pi > 0 ? '0.85rem' : 0 }}>
-          {p.text}
+        <div key={pi} className="ai-text" style={{ marginTop: pi > 0 ? '0.85rem' : 0 }}>
+          <Markdown>{p.text}</Markdown>
           {p.citeIds?.length > 0 && (
-            <Citation ids={p.citeIds} onClick={(e) => handleCitationClick(e, p.citeIds)} />
+            <Citation ids={p.citeIds} onClick={(e) => handleCitationClick(e, p.citeIds, msg.sources)} />
           )}
-        </p>
+        </div>
       ))}
 
       <div className="ai-meta">
         <span>{msg.meta?.time}</span>
-        <span className="ai-meta-link" onClick={(e) => handleCitationClick(e, SOURCES.map(s => s.id))}>
+        <span className="ai-meta-link" onClick={(e) => handleCitationClick(e, (msg.sources || []).map(s => s.id), msg.sources)}>
           Citations +{msg.meta?.citations}
         </span>
-        <span className="ai-meta-link">Web Sources +{msg.meta?.webSources}</span>
+        
       </div>
     </div>
   );
@@ -567,13 +539,13 @@ export default function DataSearch() {
           <div style={{ padding: '0.5rem 0.75rem', fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-medium)', borderBottom: '1px solid var(--border-color)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             Sources
           </div>
-          {SOURCES.filter(s => citationPopup.ids.includes(s.id)).map(src => (
+          {(citationPopup.sources || []).filter(s => citationPopup.ids.includes(s.id)).map(src => (
             <button key={src.id} className="citation-source-row" onClick={() => openDocViewer(src)}>
               <File size={13} style={{ flexShrink: 0, color: 'var(--primary-color)' }} />
               <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 <span style={{ fontWeight: 700 }}>[{src.id}]</span>&nbsp; {src.shortName}
               </span>
-              <span className="text-light text-xs" style={{ flexShrink: 0 }}>pg. {src.pages.join(', ')}</span>
+              <span className="text-light text-xs" style={{ flexShrink: 0 }}>{src.unit || 'pg.'} {src.pages.join(', ')}</span>
             </button>
           ))}
         </div>
