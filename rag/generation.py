@@ -36,10 +36,23 @@ def _location_label(c: Chunk) -> str:
     return f"  [{', '.join(parts)}]" if parts else ""
 
 
+# Groq's free tier allows ~8k tokens per request (prompt + 2048 answer tokens),
+# so the context is capped at ~4.5k tokens (~4 chars/token). Spreadsheet rows
+# can be very wide, so each passage is also truncated.
+MAX_CONTEXT_CHARS = 18000
+MAX_PASSAGE_CHARS = 2500
+
+
 def build_context_string(chunks: List[Chunk]) -> str:
     parts = []
+    used = 0
     for i, c in enumerate(chunks, 1):
-        parts.append(f"--- Passage {i}{_location_label(c)} ---\n{c.text}")
+        text = c.text if len(c.text) <= MAX_PASSAGE_CHARS else c.text[:MAX_PASSAGE_CHARS] + " ..."
+        part = f"--- Passage {i}{_location_label(c)} ---\n{text}"
+        if parts and used + len(part) > MAX_CONTEXT_CHARS:
+            break
+        parts.append(part)
+        used += len(part)
     return "\n\n".join(parts)
 
 

@@ -7,6 +7,8 @@ the Rust server running.
 """
 
 import numpy as np
+import os
+
 import pytest
 
 # pyrefly: ignore [import-error, missing-import]
@@ -24,9 +26,11 @@ def _server_is_up() -> bool:
         return False
 
 
+# These tests replace the server's loaded collection, which breaks a running app,
+# so they only run when explicitly requested: DEVDB_LIVE_TESTS=1 pytest
 pytestmark = pytest.mark.skipif(
-    not _server_is_up(),
-    reason=f"DevDB server not reachable at {DEVDB_URL}",
+    os.getenv("DEVDB_LIVE_TESTS") != "1" or not _server_is_up(),
+    reason="set DEVDB_LIVE_TESTS=1 with a DevDB server running (it overwrites the loaded index)",
 )
 
 

@@ -21,6 +21,25 @@ _SHORT_NAME_LEN = 18
 _EMPTY_LABEL_RE = re.compile(r"^\W*(sources?|citations?)\W*$", re.IGNORECASE)
 
 
+# Question keyword -> country tag on indexed chunks. The index is dominated by
+# huge UK/US spreadsheets, so an unscoped Norway or India question is easily
+# drowned out; pinning the country fixes that.
+_COUNTRY_KEYWORDS = [
+    ("Norway", r"\b(norway|norwegian|norsk|equinor)\b"),
+    ("UK", r"\b(uk|u\.k\.|united kingdom|britain|british|ukcs)\b"),
+    ("US", r"\b(u\.s\.|usa|united states|texas|american|california)\b"),
+    ("India", r"\b(india|indian)\b"),
+    ("Global", r"\b(brent|wti|dubai crude|commodity|commodities|pink sheet|crude oil prices?|oil prices?|gas prices?|henry hub|lng price)\b"),
+]
+
+
+def detect_country(question: str):
+    """The single country a question names, or None if it names zero or several."""
+    q = question.lower()
+    hits = [tag for tag, pattern in _COUNTRY_KEYWORDS if re.search(pattern, q)]
+    return hits[0] if len(hits) == 1 else None
+
+
 def _normalize(text: str) -> str:
     """Plain spaces/hyphens instead of the non-breaking variants the model likes to emit; no raw <br>."""
     text = text.translate({0x202F: " ", 0x00A0: " ", 0x2011: "-", 0x2010: "-"})

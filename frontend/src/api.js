@@ -1,12 +1,12 @@
 /* Thin client for the PetroSage FastAPI server (proxied at /api by vite.config.js). */
 
-export async function postQuery(path, query) {
+export async function postQuery(path, query, country = null) {
   let res;
   try {
     res = await fetch(path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ query, country }),
     });
   } catch {
     throw new Error('Cannot reach the API server. Is `uvicorn api.server:app --port 8000` running?');

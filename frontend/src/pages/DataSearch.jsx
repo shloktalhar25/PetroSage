@@ -64,6 +64,16 @@ const RESULTS = [
   },
 ];
 
+/* Jurisdiction label -> country tag stored on indexed chunks (null = search everything). */
+const JURISDICTIONS = {
+  All: null,
+  India: 'India',
+  Norway: 'Norway',
+  'United Kingdom': 'UK',
+  'United States': 'US',
+  'Global (commodity prices)': 'Global',
+};
+
 /* ─── Citation inline component ─────────────────────────────── */
 function Citation({ ids, onClick }) {
   return (
@@ -94,6 +104,7 @@ export default function DataSearch() {
   const [filters, setFilters] = useState({});
   const [searchQ, setSearchQ] = useState('');
   const [aiQuery, setAiQuery] = useState('');
+  const [jurisdiction, setJurisdiction] = useState('All');
   const [isSearching, setIsSearching] = useState(false);
   const [aiMessages, setAiMessages] = useState([]);
   const [citationPopup, setCitationPopup] = useState(null);
@@ -122,7 +133,7 @@ export default function DataSearch() {
     setAiMessages(prev => [...prev, { role: 'user', text: q }]);
     setIsSearching(true);
 
-    postQuery('/api/rag', q)
+    postQuery('/api/rag', q, JURISDICTIONS[jurisdiction])
       .catch(errorAnswer)
       .then(answer => {
         setAiMessages(prev => [...prev, { role: 'assistant', ...answer }]);
@@ -203,7 +214,7 @@ export default function DataSearch() {
         <div className="filters-sidebar">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
             <span className="font-semibold text-sm">Filters</span>
-            <span className="text-xs text-primary" style={{ cursor: 'pointer' }} onClick={() => setFilters({})}>Clear</span>
+            <span className="text-xs text-primary" style={{ cursor: 'pointer' }} onClick={() => { setFilters({}); setJurisdiction('All'); }}>Clear</span>
           </div>
 
           {/* Document Type */}
@@ -247,9 +258,9 @@ export default function DataSearch() {
           {/* Jurisdiction */}
           <div className="filter-section">
             <div className="filter-title">Jurisdiction</div>
-            {['India', 'Norway', 'United Kingdom', 'United States', 'Middle East', 'Global'].map(j => (
+            {Object.keys(JURISDICTIONS).map(j => (
               <label key={j} className="filter-check">
-                <input type="checkbox" checked={!!filters[j]} onChange={() => toggleFilter(j)} />
+                <input type="radio" name="jurisdiction" checked={jurisdiction === j} onChange={() => setJurisdiction(j)} />
                 {j}
               </label>
             ))}
@@ -313,14 +324,14 @@ export default function DataSearch() {
                       <div className="rag-empty-icon"><Flame size={26} /></div>
                       <h2 className="font-bold text-xl">Oil &amp; Gas Knowledge Search</h2>
                       <p className="text-medium text-sm mt-2 text-center" style={{ maxWidth: 420 }}>
-                        Ask questions across PSCs, RSCs, legislation, field data, and regulatory frameworks. Answers are grounded in your indexed documents with inline citations.
+                        Ask about Norwegian fields and reserves, UK licensing blocks, US/Texas oil &amp; gas rules, worldwide rig counts, and commodity prices. Answers are grounded in your indexed documents with inline citations.
                       </p>
                       <div className="rag-suggestions">
                         {[
-                          'What is the cost recovery mechanism under NELP PSCs?',
-                          'Summarise the PNGRB Act and its role in CGD regulation.',
-                          'What royalty rates apply to deepwater blocks under HELP?',
-                          'Compare PSC and RSC models for upstream oil and gas in India.',
+                          'Which Norwegian fields are listed and who operates them?',
+                          'How have Brent and WTI crude oil prices changed in recent years?',
+                          'What are the Texas rules for oil and gas field operations?',
+                          'What is the Mahanadi deepwater discovery and how big is it?',
                         ].map(s => (
                           <button
                             key={s}
@@ -361,7 +372,7 @@ export default function DataSearch() {
                       type="text"
                       value={aiQuery}
                       onChange={e => setAiQuery(e.target.value)}
-                      placeholder="Ask anything about oil & gas law, contracts, or areas…"
+                      placeholder={jurisdiction === 'All' ? 'Ask about fields, reserves, licences, rigs, prices or regulations…' : `Ask about ${jurisdiction} data…`}
                       className="rag-input"
                       disabled={isSearching}
                     />

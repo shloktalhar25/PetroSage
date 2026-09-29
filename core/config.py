@@ -68,7 +68,7 @@ MIN_CHUNK_CHARS = 100   # drop tiny fragments
 # Retrieval hyper-parameters
 # ─────────────────────────────────────────────────────────────────────────────
 TOP_K       = 20    # candidates before MMR
-MMR_K       = 6     # final chunks after diversity re-rank
+MMR_K       = 10    # final chunks after diversity re-rank (rows are short; 6 missed too much)
 MMR_LAMBDA  = 0.6   # relevance vs. diversity trade-off (0=diversity, 1=relevance)
 EXPANSION_N = 3     # number of extra HyDE queries to generate
 MIN_SCORE   = 0.25  # cosine score floor (drop noisy results)

@@ -23,6 +23,29 @@ def _find_header_row(rows: List[tuple]) -> int:
     return 0
 
 
+# Norwegian Offshore Directorate headers -> English, so English questions match.
+_HEADER_EN = {
+    "Selskapsnavn": "Company name",
+    "Område": "Area",
+    "Godkjent dato": "Approved date",
+    "Feltnavn": "Field name",
+    "Funnnavn": "Discovery name",
+    "Operatør": "Operator",
+    "Status": "Status",
+    "#licensees": "Number of production licences held (as licensee)",
+    "#operatorships": "Number of licences operated",
+    "#operatorships fields": "Number of fields operated",
+    "#operatorships discoveries": "Number of discoveries operated",
+}
+
+
+def _dataset_label(path: Path, sheet: str, title: str) -> str:
+    """Human label prepended to every row so retrieval knows what the row is about."""
+    name = path.stem.replace("_", " ")
+    extra = [t for t in (title, sheet) if t and t.lower() not in name.lower()]
+    return " - ".join([name] + extra[:1])
+
+
 def load_excel(path: Path) -> List[Dict[str, Any]]:
     """Read an Excel workbook, returning one block per populated data row."""
     blocks: List[Dict[str, Any]] = []
@@ -35,7 +58,12 @@ def load_excel(path: Path) -> List[Dict[str, Any]]:
             continue
 
         header_idx = _find_header_row(rows)
-        headers = rows[header_idx]
+        headers = [_HEADER_EN.get(str(h).strip(), h) if h is not None else None
+                   for h in rows[header_idx]]
+        if headers and headers[0] is None:  # unlabeled first column = row label (e.g. year/month)
+            headers[0] = "Period"
+        title = next((str(c) for r in rows[:header_idx] for c in r if c), "")
+        label = _dataset_label(path, sheet_name, title)
 
         for i, row in enumerate(rows[header_idx + 1:], start=header_idx + 2):
             if all(v is None for v in row):
@@ -48,7 +76,7 @@ def load_excel(path: Path) -> List[Dict[str, Any]]:
             if not parts:
                 continue
             blocks.append({
-                "text": ", ".join(parts),
+                "text": f"{label}: " + ", ".join(parts),
                 "sheet": sheet_name,
                 "row": i,
             })

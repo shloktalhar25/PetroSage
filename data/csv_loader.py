@@ -21,7 +21,7 @@ def load_csv(path: Path) -> List[Dict[str, Any]]:
             if not parts:
                 continue
             blocks.append({
-                "text": ", ".join(parts),
+                "text": f"{path.stem.replace('_', ' ')}: " + ", ".join(parts),
                 "row": i,
             })
     return blocks

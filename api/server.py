@@ -85,8 +85,22 @@ def _run_rag(req: QueryRequest, scope: Optional[str] = None) -> RAGResponse:
     except (RuntimeError, FileNotFoundError, EnvironmentError, httpx.HTTPError) as e:
         log.exception("Pipeline unavailable")
         raise HTTPException(status_code=503, detail=str(e))
+    question = req.query.strip()
+    country = scope or req.country or adapters.detect_country(question)
     try:
-        return pipeline.query(req.query.strip(), country=scope or req.country or None)
+        try:
+            resp = pipeline.query(question, country=country)
+        except RuntimeError as e:
+            # DevDB was restarted or its collection replaced (e.g. by live tests): reload our snapshot once.
+            if "dimension mismatch" not in str(e) and "no collection" not in str(e):
+                raise
+            log.warning("DevDB lost the index (%s); reloading snapshot", e)
+            pipeline.retriever.store.load()
+            resp = pipeline.query(question, country=country)
+        # An auto-detected country can be wrong; retry unscoped rather than answer "not found".
+        if not resp.chunks and country and not (scope or req.country):
+            resp = pipeline.query(question)
+        return resp
     except Exception as e:
         log.exception("RAG query failed")
         raise HTTPException(status_code=502, detail=f"RAG query failed: {e}")
