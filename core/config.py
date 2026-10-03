@@ -30,6 +30,20 @@ META_PATH       = INDEX_DIR / "meta.json"
 MAX_TEXT_FILE_MB = 5
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Compliance review (Regulations page)
+# ─────────────────────────────────────────────────────────────────────────────
+# Indexed files that count as law. Uploaded proposals are checked against these
+# only (Manual_data/regulations/ also holds a sample *proposal*, which is not law).
+COMPLIANCE_LAW_SOURCES = (
+    "Manual_data/regulations/India_Offshore_Maritime_Laws.txt",
+    "Manual_data/source.pdf",
+)
+COMPLIANCE_SAMPLE_PATH     = MANUAL_DATA_DIR / "regulations" / "Company_Rig_Proposal_2026.txt"
+COMPLIANCE_UPLOAD_DIR      = Path("uploads") / "compliance"   # relative to the repo root
+COMPLIANCE_MAX_UPLOAD_MB   = 10
+COMPLIANCE_RETENTION_HOURS = 24   # uploads and their analyses are deleted after this
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Vector DB backend (DevDB, our from-scratch Rust HNSW engine, over HTTP)
 # ─────────────────────────────────────────────────────────────────────────────
 VECTOR_BACKEND       = os.getenv("VECTOR_BACKEND", "rust")

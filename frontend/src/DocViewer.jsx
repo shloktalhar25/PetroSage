@@ -126,7 +126,12 @@ export default function DocViewer({ source, onClose }) {
             ))}
           </div>
         )}
-        {info && isPdf && pageExcerpts.length === 0 && (
+        {info && !isPdf && excerpts.length === 0 && (
+          <div className="doc-viewer-msg">
+            <span>No cited rows for this reference. Use the download button to open <strong>{info.name}</strong>.</span>
+          </div>
+        )}
+        {info && isPdf && excerpts.length > 0 && pageExcerpts.length === 0 && (
           <div className="text-xs text-light" style={{ textAlign: 'center' }}>No cited passages on this page.</div>
         )}
       </div>

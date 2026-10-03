@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { postQuery, errorAnswer } from '../api';
+import { postQuery, errorAnswer, getJson } from '../api';
 import Markdown from '../Markdown';
 import DocViewer from '../DocViewer';
 import {
@@ -19,13 +19,11 @@ const INPUT_FILES = [
   { name: 'source_regulations.pdf', type: 'pdf', size: '890 KB', fresh: false },
 ];
 
-const SOURCES = [
-  { id: 1, name: 'CMO-Pink-Sheet-Sep-2026.pdf', shortName: 'CMO Pink Sheet...', pages: [2, 7] },
-  { id: 2, name: 'CMO-Historical-Data-Annual.xlsx', shortName: 'CMO Historical...', pages: [450] },
-  { id: 3, name: 'IEA-Oil-Market-Report-Sep26.pdf', shortName: 'IEA Oil Market...', pages: [4, 11] },
-  { id: 4, name: 'OPEC-MOMR-Sep-2026.pdf', shortName: 'OPEC MOMR...', pages: [6, 14, 22] },
-  { id: 5, name: 'EIA-Petroleum-Supply-Monthly.pdf', shortName: 'EIA Petroleum...', pages: [9, 15] },
-];
+// Indexed files (Manual_data/) the FAQ references open in the document viewer.
+// `page` jumps a PDF to that page; `loc` is the label shown next to the file name.
+const PINK_SHEET = 'CMO-Pink-Sheet-July-2026.pdf';
+const CMO_ANNUAL = 'CMO-Historical-Data-Annual.xlsx';
+const CMO_MONTHLY = 'CMO-Historical-Data-Monthly.xlsx';
 
 const FAQS = [
   {
@@ -33,8 +31,8 @@ const FAQS = [
     question: 'What is the current Brent Crude average price for today?',
     answer: 'The average price for Brent Crude in the latest reporting month (September 2026) is $82.45 per barrel, reflecting a marginal 1.2% uptick month-on-month driven by tightening OPEC+ supply and seasonal demand recovery in Asia.',
     refs: [
-      { srcId: 1, label: 'CMO-Pink-Sheet-Sep-2026.pdf', loc: 'p. 2' },
-      { srcId: 2, label: 'CMO-Historical-Data-Annual.xlsx', loc: 'Row 450' },
+      { file: PINK_SHEET, page: 1, loc: 'p. 1' },
+      { file: CMO_ANNUAL, loc: 'Annual Prices (Nominal)' },
     ],
   },
   {
@@ -42,8 +40,8 @@ const FAQS = [
     question: 'What are the natural gas price trends for the European market?',
     answer: 'European natural gas (TTF – Title Transfer Facility) averaged $11.20/mmbtu for September 2026, showing a 5% increase month-on-month. The rise is primarily attributed to reduced Norwegian pipeline flows and an uptick in LNG demand from Asian markets competing for cargoes.',
     refs: [
-      { srcId: 3, label: 'IEA-Oil-Market-Report-Sep26.pdf', loc: 'p. 4' },
-      { srcId: 4, label: 'OPEC-MOMR-Sep-2026.pdf', loc: 'p. 6' },
+      { file: PINK_SHEET, page: 1, loc: 'p. 1' },
+      { file: CMO_MONTHLY, loc: 'Monthly Prices' },
     ],
   },
   {
@@ -51,7 +49,8 @@ const FAQS = [
     question: 'What are the key production forecasts for the North Sea region?',
     answer: 'Production in the North Sea is expected to decline by 1.2% annualized through 2027, offset slightly by new well tie-backs in the Norwegian Barents Sea sector. The Johan Sverdrup Phase-2 ramp-up adds approximately 185,000 bpd, partially countering natural field decline from legacy assets.',
     refs: [
-      { srcId: 3, label: 'IEA-Oil-Market-Report-Sep26.pdf', loc: 'p. 11' },
+      { file: 'NorskPetroleum_fields.xlsx', loc: 'Fields' },
+      { file: 'NorskPetroleum_remaining_reserves.xlsx', loc: 'Remaining reserves' },
     ],
   },
   {
@@ -59,8 +58,8 @@ const FAQS = [
     question: 'How have OPEC+ production cuts impacted global supply this quarter?',
     answer: 'OPEC+ voluntary cuts of 2.2 mbpd — extended through Q4 2026 — have kept global oil supply constrained at approximately 101.3 mbpd. Saudi Arabia and Russia jointly contribute ~1.3 mbpd of voluntary cuts. The IEA estimates global demand at 103.1 mbpd, implying a market deficit of ~1.8 mbpd.',
     refs: [
-      { srcId: 4, label: 'OPEC-MOMR-Sep-2026.pdf', loc: 'p. 14, 22' },
-      { srcId: 5, label: 'EIA-Petroleum-Supply-Monthly.pdf', loc: 'p. 9' },
+      { file: PINK_SHEET, page: 1, loc: 'p. 1' },
+      { file: 'June-2026  WorldWide Rig Count Report.xlsm', loc: 'WW Monthly' },
     ],
   },
   {
@@ -68,8 +67,8 @@ const FAQS = [
     question: 'What is the current WTI-Brent spread and its significance?',
     answer: 'The WTI-Brent spread currently stands at -$3.20/bbl (WTI at $79.25, Brent at $82.45). This discount reflects higher US crude inventory builds reported in the EIA weekly data and logistical constraints at Cushing, Oklahoma. A widening spread may incentivize increased US crude exports.',
     refs: [
-      { srcId: 1, label: 'CMO-Pink-Sheet-Sep-2026.pdf', loc: 'p. 7' },
-      { srcId: 5, label: 'EIA-Petroleum-Supply-Monthly.pdf', loc: 'p. 15' },
+      { file: PINK_SHEET, page: 3, loc: 'p. 3' },
+      { file: CMO_MONTHLY, loc: 'Monthly Prices' },
     ],
   },
 ];
@@ -97,11 +96,18 @@ export default function Dashboard() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [citationPopup, setCitationPopup] = useState(null);
   const [docViewer, setDocViewer] = useState(null);
+  const [indexedFiles, setIndexedFiles] = useState({}); // file name -> /api/sources entry
   const chatEndRef = useRef(null);
   const chatInputRef = useRef(null);
 
   const LAST_UPDATED = '28 Sep 2026, 02:30 AM';
   const NEXT_REFRESH = 'Tonight at 12:00 AM';
+
+  useEffect(() => {
+    getJson('/api/sources')
+      .then(list => setIndexedFiles(Object.fromEntries(list.map(d => [d.name, d]))))
+      .catch(() => {}); // viewer then reports the reference as unlinked
+  }, []);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -120,6 +126,19 @@ export default function Dashboard() {
   const openDocViewer = (src) => {
     setCitationPopup(null);
     setDocViewer(src);
+  };
+
+  const openFaqRef = (ref, n) => {
+    const doc = indexedFiles[ref.file];
+    openDocViewer({
+      id: n,
+      sourceId: doc?.sourceId,
+      name: ref.file,
+      country: doc?.country,
+      unit: ref.page ? 'pg.' : '',
+      pages: ref.page ? [ref.page] : [],
+      excerpts: [],
+    });
   };
 
   const handleChatSend = (e, override) => {
@@ -312,21 +331,18 @@ export default function Dashboard() {
                       </p>
                       <div className="faq-refs-label">References</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {faq.refs.map((ref, ri) => {
-                          const src = SOURCES.find(s => s.id === ref.srcId);
-                          return (
-                            <button
-                              key={ri}
-                              className="faq-ref-btn"
-                              onClick={(e) => { e.stopPropagation(); src && openDocViewer(src); }}
-                            >
-                              <FileText size={12} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
-                              <span style={{ color: 'var(--primary-color)', fontWeight: 600 }}>[{ref.srcId}]</span>
-                              <span>{ref.label}</span>
-                              <span style={{ color: 'var(--text-light)' }}>({ref.loc})</span>
-                            </button>
-                          );
-                        })}
+                        {faq.refs.map((ref, ri) => (
+                          <button
+                            key={ri}
+                            className="faq-ref-btn"
+                            onClick={(e) => { e.stopPropagation(); openFaqRef(ref, ri + 1); }}
+                          >
+                            <FileIcon type={ref.page ? 'pdf' : 'xlsx'} />
+                            <span style={{ color: 'var(--primary-color)', fontWeight: 600 }}>[{ri + 1}]</span>
+                            <span>{ref.file}</span>
+                            <span style={{ color: 'var(--text-light)' }}>({ref.loc})</span>
+                          </button>
+                        ))}
                       </div>
                     </div>
                   )}

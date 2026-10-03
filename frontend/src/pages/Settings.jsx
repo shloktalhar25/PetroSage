@@ -103,7 +103,7 @@ export default function Settings() {
 
       <div className="settings-page">
         {/* ── Connection status ── */}
-        <section className="card settings-card" aria-labelledby="status-heading">
+        <section className="card settings-card settings-status-card" aria-labelledby="status-heading">
           <div className="settings-card-head">
             <h2 id="status-heading">Connection status</h2>
             <button className="btn btn-outline settings-small-btn" onClick={checkServer} disabled={checking}>
@@ -133,7 +133,7 @@ export default function Settings() {
         </section>
 
         {/* ── Server configuration (read-only) ── */}
-        <section className="card settings-card" aria-labelledby="ai-heading">
+        <section className="card settings-card settings-ai-card" aria-labelledby="ai-heading">
           <div className="settings-card-head">
             <h2 id="ai-heading">AI configuration</h2>
             <span className="badge badge-secondary">Read-only</span>
@@ -160,7 +160,7 @@ export default function Settings() {
         </section>
 
         {/* ── User preferences ── */}
-        <section className="card settings-card" aria-labelledby="prefs-heading">
+        <section className="card settings-card settings-prefs-card" aria-labelledby="prefs-heading">
           <div className="settings-card-head">
             <h2 id="prefs-heading">Your preferences</h2>
             <span className="badge badge-secondary">Saved in this browser</span>

@@ -1,165 +1,188 @@
-import React, { useState } from 'react';
-import { FileText, Download, CheckCircle2, ChevronDown, Edit3, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { FileText, FileSpreadsheet, File, Download, Eye, Loader2, AlertCircle, RefreshCw, Search } from 'lucide-react';
+import { getJson } from '../api';
+import DocViewer from '../DocViewer';
+
+const KIND_LABELS = { pdf: 'PDF', spreadsheet: 'Spreadsheet', csv: 'CSV', text: 'Text' };
+
+function KindIcon({ kind }) {
+  const Icon = kind === 'pdf' ? FileText : kind === 'text' ? File : FileSpreadsheet;
+  return <Icon size={20} className="text-primary" style={{ flexShrink: 0 }} />;
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function countBy(docs, key) {
+  const counts = {};
+  docs.forEach(d => { const k = d[key] || 'Other'; counts[k] = (counts[k] || 0) + 1; });
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+}
+
+function FilterGroup({ title, options, value, onChange, label = k => k }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="text-sm font-semibold mb-1">{title}</div>
+      <div className="doclib-filters">
+        <button className={`doclib-chip ${value === null ? 'active' : ''}`} onClick={() => onChange(null)}>All</button>
+        {options.map(([k, n]) => (
+          <button key={k} className={`doclib-chip ${value === k ? 'active' : ''}`} onClick={() => onChange(value === k ? null : k)}>
+            {label(k)} <span className="doclib-chip-count">{n}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function DataExtraction() {
-  const [activeTab, setActiveTab] = useState('Summary');
-  const [modalType, setModalType] = useState(null); // 'csv', 'ai', or null
+  const [docs, setDocs] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
+  const [kind, setKind] = useState(null);
+  const [region, setRegion] = useState(null);
+  const [viewing, setViewing] = useState(null);
+
+  const fetchDocs = () => (
+    getJson('/api/sources')
+      .then(d => { setDocs(d); setError(null); })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  );
+
+  useEffect(() => { fetchDocs(); }, []);
+
+  const retry = () => {
+    setLoading(true);
+    fetchDocs();
+  };
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (docs || []).filter(d =>
+      (!kind || d.kind === kind) &&
+      (!region || (d.country || 'Other') === region) &&
+      (!q || `${d.name} ${d.folder}`.toLowerCase().includes(q))
+    );
+  }, [docs, query, kind, region]);
+
+  const totals = useMemo(() => (docs || []).reduce(
+    (t, d) => ({ chunks: t.chunks + d.chunks, size: t.size + d.sizeBytes }), { chunks: 0, size: 0 }
+  ), [docs]);
+
+  const openViewer = (d) => setViewing({
+    id: d.sourceId, sourceId: d.sourceId, name: d.name, country: d.country,
+    unit: 'pg.', pages: [1], excerpts: [],
+  });
 
   return (
     <div className="flex flex-col" style={{ height: '100%' }}>
       <div className="header">
         Structured Data Extraction (Oil & Gas Reports)
       </div>
-      
-      <div className="content-area animate-fade-in relative">
-        <div className="secondary-sidebar">
-          <div className="tabs">
-            <div className={`tab ${activeTab === 'Summary' ? 'active' : ''}`} onClick={() => setActiveTab('Summary')}>Summary</div>
-            <div className={`tab ${activeTab === 'Content' ? 'active' : ''}`} onClick={() => setActiveTab('Content')}>Content</div>
-          </div>
-          
-          {activeTab === 'Summary' && (
-            <>
-              <div className="flex flex-col gap-2">
-                <div className="text-sm font-semibold mb-1">Details</div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-medium">Status</span>
-                  <span className="badge badge-success">Completed</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-medium">Start Date</span>
-                  <span>12/10/2026</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-medium">Duration</span>
-                  <span>15 mins</span>
-                </div>
-              </div>
 
-              <div className="flex flex-col gap-2">
-                <div className="text-sm font-semibold mb-1">Steps</div>
-                <div className="flex gap-2 text-sm">
-                  <CheckCircle2 size={16} className="text-primary mt-1" />
-                  <div>
-                    <div className="font-medium">Extract Tables & Time-Series</div>
-                    <div className="text-xs text-medium">Extracts structured data to fill templates.</div>
-                  </div>
-                </div>
-              </div>
+      <div className="content-area animate-fade-in">
+        <div className="secondary-sidebar">
+          <div className="flex flex-col gap-2">
+            <div className="text-sm font-semibold mb-1">Indexed library</div>
+            <div className="flex justify-between text-sm">
+              <span className="text-medium">Documents</span>
+              <span>{docs ? docs.length : '–'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-medium">Chunks indexed</span>
+              <span>{docs ? totals.chunks.toLocaleString() : '–'}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-medium">Total size</span>
+              <span>{docs ? formatSize(totals.size) : '–'}</span>
+            </div>
+          </div>
+
+          {docs && docs.length > 0 && (
+            <>
+              <FilterGroup title="File type" options={countBy(docs, 'kind')} value={kind} onChange={setKind} label={k => KIND_LABELS[k] || k} />
+              <FilterGroup title="Region / dataset" options={countBy(docs, 'country')} value={region} onChange={setRegion} />
             </>
           )}
+        </div>
 
-          {activeTab === 'Content' && (
-            <div className="text-sm text-medium">
-              List of identified tables and coordinates from the PDFs will be rendered here.
+        <div className="main-panel card doclib-panel">
+          <div className="doclib-list">
+            <div className="doclib-toolbar">
+              <div className="doclib-search">
+                <Search size={14} className="text-medium" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder="Search documents by name or folder…"
+                  aria-label="Search documents"
+                />
+              </div>
+              {docs && (
+                <span className="text-xs text-medium">
+                  {filtered.length === docs.length ? `${docs.length} documents` : `${filtered.length} of ${docs.length} documents`}
+                </span>
+              )}
             </div>
+
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {loading && !docs && (
+                <div className="doclib-msg"><Loader2 size={16} className="animate-spin" /> Loading documents…</div>
+              )}
+              {error && (
+                <div className="doclib-msg" role="alert">
+                  <AlertCircle size={16} style={{ color: 'var(--danger-color)' }} />
+                  <span>{error}</span>
+                  <button className="btn btn-outline doclib-btn" onClick={retry} disabled={loading}><RefreshCw size={13} /> Retry</button>
+                </div>
+              )}
+              {docs && filtered.length === 0 && (
+                <div className="doclib-msg">{docs.length ? 'No documents match your filters.' : 'No documents are indexed yet. Run python ingest.py.'}</div>
+              )}
+
+              {filtered.map(d => (
+                <div key={d.sourceId} className={`doclib-row ${viewing?.sourceId === d.sourceId ? 'active' : ''}`}>
+                  <div className="flex items-center gap-3" style={{ minWidth: 0 }}>
+                    <KindIcon kind={d.kind} />
+                    <div style={{ minWidth: 0 }}>
+                      <div className="font-semibold text-sm doclib-name" title={d.name}>{d.name}</div>
+                      <div className="text-xs text-medium flex gap-2 mt-1 items-center" style={{ flexWrap: 'wrap' }}>
+                        <span>Manual_data/{d.folder ? `${d.folder}/` : ''}</span>
+                        <span className="badge badge-secondary">{KIND_LABELS[d.kind] || d.kind}</span>
+                        {d.country && <span className="badge badge-secondary">{d.country}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4" style={{ flexShrink: 0 }}>
+                    <span className="text-xs text-medium doclib-meta">
+                      {d.chunks.toLocaleString()} chunks
+                      {d.pageCount ? ` · ${d.pageCount} pages` : ''}
+                      {` · ${formatSize(d.sizeBytes)}`}
+                    </span>
+                    {d.kind === 'pdf' && (
+                      <button className="btn btn-outline doclib-btn" onClick={() => openViewer(d)}>
+                        <Eye size={14} /> View
+                      </button>
+                    )}
+                    <a className="btn btn-outline doclib-btn" href={`/api/sources/${d.sourceId}/file`} download={d.name}>
+                      <Download size={14} /> Download
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {viewing && (
+            <DocViewer key={viewing.sourceId} source={viewing} onClose={() => setViewing(null)} />
           )}
         </div>
-
-        <div className="main-panel card flex flex-col gap-0" style={{ padding: 0 }}>
-          <div className="p-4 border-b flex justify-between items-center" style={{ backgroundColor: 'var(--secondary-color)' }}>
-            <input type="text" className="input-control w-full max-w-md" placeholder="Search extracted templates..." />
-          </div>
-          
-          <div className="flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b file-item hover:bg-secondary transition-colors" style={{ borderRadius: 0 }}>
-              <div className="flex items-center gap-3">
-                <FileText size={20} className="text-primary" />
-                <div>
-                  <div className="font-semibold text-sm">Commodity Price Extraction (Monthly)</div>
-                  <div className="text-xs text-medium flex gap-2 mt-1">
-                    <span>Template: CMO-Monthly</span>
-                    <span className="badge badge-secondary">Auto-mapped</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-medium">14 tables found</span>
-                <button className="btn btn-outline hover:bg-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setModalType('csv')}>
-                  <FileText size={14}/> View CSV
-                </button>
-                <button className="btn btn-primary hover:bg-primary-hover" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setModalType('ai')}>
-                  <Edit3 size={14}/> Validate with AI
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 border-b file-item hover:bg-secondary transition-colors" style={{ borderRadius: 0 }}>
-              <div className="flex items-center gap-3">
-                <FileText size={20} className="text-primary" />
-                <div>
-                  <div className="font-semibold text-sm">Norway Well Production Logs</div>
-                  <div className="text-xs text-medium flex gap-2 mt-1">
-                    <span>Template: Well-Log-Standard</span>
-                    <span className="badge badge-secondary">Auto-mapped</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-medium">420 rows</span>
-                <button className="btn btn-outline hover:bg-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setModalType('csv')}>
-                  <FileText size={14}/> View CSV
-                </button>
-                <button className="btn btn-primary hover:bg-primary-hover" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setModalType('ai')}>
-                  <Edit3 size={14}/> Validate with AI
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 border-b file-item hover:bg-secondary transition-colors" style={{ borderRadius: 0 }}>
-              <div className="flex items-center gap-3">
-                <FileText size={20} className="text-primary" />
-                <div>
-                  <div className="font-semibold text-sm">US Strategic Petroleum Reserve Status</div>
-                  <div className="text-xs text-medium flex gap-2 mt-1">
-                    <span>Template: SPR-Report</span>
-                    <span className="badge badge-warning">Review Needed</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-medium">Source: source.pdf</span>
-                <button className="btn btn-outline text-success-color border-success-color hover:bg-success-bg" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => alert("Downloading SPR-Report...")}>
-                  <Download size={14}/> Download
-                </button>
-                <button className="btn btn-outline hover:bg-secondary" style={{ padding: '0.25rem 0.5rem' }}>
-                  <ChevronDown size={14}/>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Modal Overlay */}
-        {modalType && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center rounded-lg" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="bg-surface-color w-3/4 h-3/4 rounded-lg shadow-lg flex flex-col overflow-hidden animate-fade-in" style={{ backgroundColor: 'var(--surface-color)', width: '80%', height: '80%' }}>
-              <div className="p-4 flex justify-between items-center" style={{ backgroundColor: 'var(--secondary-color)', borderBottom: '1px solid var(--border-color)' }}>
-                <div className="font-semibold flex items-center gap-2">
-                  {modalType === 'csv' ? <FileText size={16} className="text-primary" /> : <Edit3 size={16} className="text-primary" />}
-                  {modalType === 'csv' ? 'CSV Data Viewer' : 'AI Data Validation'}
-                </div>
-                <button className="p-1 hover:bg-border-color rounded-md cursor-pointer" onClick={() => setModalType(null)}><X size={20} /></button>
-              </div>
-              <div className="flex-1 p-6 flex flex-col items-center justify-center text-medium" style={{ backgroundColor: '#f8fafc' }}>
-                {modalType === 'csv' ? (
-                  <>
-                    <FileText size={64} className="text-light mb-4" />
-                    <h3 className="text-lg font-medium text-dark mb-2">Spreadsheet Grid View</h3>
-                    <p className="text-center max-w-md">An embedded DataGrid component would mount here, showing the structured data extracted from the documents.</p>
-                  </>
-                ) : (
-                  <>
-                    <Edit3 size={64} className="text-primary mb-4 opacity-50" />
-                    <h3 className="text-lg font-medium text-dark mb-2">Human-in-the-Loop Validation</h3>
-                    <p className="text-center max-w-md">This view presents the extracted table on the left, and the original document on the right with bounding boxes highlighting the source data.</p>
-                  </>
-                )}
-                <button className="btn btn-primary mt-6" onClick={() => setModalType(null)}>Close</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

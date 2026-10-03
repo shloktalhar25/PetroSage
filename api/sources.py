@@ -13,6 +13,7 @@ import logging
 import pickle
 import re
 import threading
+from collections import Counter
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -31,6 +32,7 @@ MIN_ZOOM, MAX_ZOOM = 0.5, 3.0
 _HIGHLIGHT_WORDS = 8  # leading words of a chunk used to find it on the rendered page
 
 _registry: Optional[Dict[str, str]] = None
+_stats: Dict[str, Dict] = {}  # source id -> {"chunks": n, "country": most common chunk country}
 _pdf_chunk_text: Dict[str, str] = {}  # chunk id -> text, PDF chunks only (for highlighting)
 _registry_lock = threading.Lock()
 
@@ -54,6 +56,14 @@ def _load_registry() -> Dict[str, str]:
                 records = pickle.load(f)
             files = {r.get("source_file", "") for r in records}
             _registry = {source_id(s): s.replace("\\", "/") for s in files if s}
+            countries: Dict[str, Counter] = {}
+            for r in records:
+                if r.get("source_file"):
+                    countries.setdefault(source_id(r["source_file"]), Counter())[r.get("country") or ""] += 1
+            _stats.update(
+                (sid, {"chunks": sum(c.values()), "country": c.most_common(1)[0][0] or None})
+                for sid, c in countries.items()
+            )
             _pdf_chunk_text.update(
                 (str(r["id"]), r.get("text", "")) for r in records
                 if str(r.get("source_file", "")).lower().endswith(".pdf")
@@ -90,6 +100,25 @@ def describe(path: Path) -> Dict:
         with fitz.open(path) as doc:
             info["pageCount"] = doc.page_count
     return info
+
+
+def list_sources() -> List[Dict]:
+    """Every indexed source file still on disk, with viewer metadata and index stats."""
+    out = []
+    for sid, rel in _load_registry().items():
+        path = resolve(sid)
+        if path is None:
+            continue
+        info = describe(path)
+        folder = str(Path(rel).parent.relative_to(MANUAL_DATA_DIR.as_posix()))
+        out.append({
+            "sourceId": sid,
+            **info,
+            "folder": "" if folder == "." else folder,
+            "sizeBytes": path.stat().st_size,
+            **_stats.get(sid, {"chunks": 0, "country": None}),
+        })
+    return sorted(out, key=lambda d: (d["folder"].lower(), d["name"].lower()))
 
 
 def _highlight_rects(page: "fitz.Page", texts: List[str]) -> List["fitz.Rect"]:

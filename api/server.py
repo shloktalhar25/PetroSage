@@ -13,9 +13,11 @@ Endpoints (the frontend reaches them through the Vite dev proxy):
     POST /api/upstream/ai     Upstream page         -> {text, refs}
     POST /api/midstream/ai    Midstream page        -> {text, detail, highlight, flyTo, refs}
     GET  /api/config/public   Settings page         -> read-only model/retrieval/index info
+    GET  /api/sources         Data Extraction page  -> every indexed document
     GET  /api/sources/{id}                          -> document viewer metadata
     GET  /api/sources/{id}/pages/{n}.png            -> rendered PDF page (cited text highlighted)
     GET  /api/sources/{id}/file                     -> original source file download
+    /api/compliance/*         Regulations page      -> upload + compliance review (api/compliance.py)
 
 RAG endpoints answer from the indexed data when it covers the question; otherwise (unless
 the request sends allow_general=false) the model answers from its own knowledge and the
@@ -28,14 +30,14 @@ import logging
 import os
 import threading
 from contextlib import asynccontextmanager
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import httpx
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 
-from api import adapters, sources
+from api import adapters, compliance, sources
 from core import config
 from core.config import DEVDB_URL, MANUAL_DATA_DIR
 from core.models import RAGResponse
@@ -93,6 +95,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="PetroSage API", lifespan=lifespan)
+app.include_router(compliance.router)  # /api/compliance/* - Regulations page
 
 
 def _run_rag(req: QueryRequest, scope: Optional[str] = None) -> RAGResponse:
@@ -192,6 +195,11 @@ def _source_path(source_id: str):
     if path is None:
         raise HTTPException(status_code=404, detail="Source file not found.")
     return path
+
+
+@app.get("/api/sources")
+def source_list() -> List[Dict]:
+    return sources.list_sources()
 
 
 @app.get("/api/sources/{source_id}")
