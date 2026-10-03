@@ -104,3 +104,17 @@ def test_fullwidth_bracket_citations_are_stripped():
 def test_br_tags_in_table_cells_become_separators():
     paras = adapters.to_search_response("| a | b |\n|--|--|\n| x<br>y | z |", CHUNKS)["paragraphs"]
     assert "<br" not in paras[0]["text"] and "x; y" in paras[0]["text"]
+
+
+def test_sources_carry_stable_id_and_cited_excerpts():
+    src = adapters.build_sources(CHUNKS)[0]
+    assert src["sourceId"] == adapters.source_id("Manual_data/Norway/fields.xlsx")
+    assert [(e["row"], e["page"]) for e in src["excerpts"]] == [(4, None), (9, None)]
+    assert src["excerpts"][0]["chunkId"] == "1" and src["excerpts"][0]["text"] == "t"
+
+
+def test_answer_source_is_reported():
+    assert adapters.to_search_response("x", CHUNKS)["meta"]["answerSource"] == "knowledge_base"
+    assert adapters.to_search_response("x", [], "general")["meta"]["answerSource"] == "general"
+    assert adapters.to_text_response("x", [], "general")["answerSource"] == "general"
+    assert adapters.to_midstream_response("x", [], {}, "general")["answerSource"] == "general"

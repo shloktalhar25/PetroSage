@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { postQuery, errorAnswer } from '../api';
 import Markdown from '../Markdown';
+import DocViewer from '../DocViewer';
 import {
-  File, CheckCircle2, ChevronDown, ChevronUp, X,
+  File, CheckCircle2, ChevronDown, ChevronUp,
   Send, Loader2, Sparkles, RefreshCw, Clock, Database,
   TrendingUp, Flame, Globe, BookOpen, FileText,
-  ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Download,
   AlertCircle, Newspaper
 } from 'lucide-react';
 
@@ -97,7 +97,6 @@ export default function Dashboard() {
   const [isChatLoading, setIsChatLoading] = useState(false);
   const [citationPopup, setCitationPopup] = useState(null);
   const [docViewer, setDocViewer] = useState(null);
-  const [docPage, setDocPage] = useState(1);
   const chatEndRef = useRef(null);
   const chatInputRef = useRef(null);
 
@@ -121,7 +120,6 @@ export default function Dashboard() {
   const openDocViewer = (src) => {
     setCitationPopup(null);
     setDocViewer(src);
-    setDocPage(src.pages[0] || 1);
   };
 
   const handleChatSend = (e, override) => {
@@ -407,81 +405,7 @@ export default function Dashboard() {
 
         {/* ── Doc Viewer panel (slides in) ── */}
         {docViewer && (
-          <div className="doc-viewer animate-fade-in" onClick={e => e.stopPropagation()}>
-            <div className="doc-viewer-header">
-              <FileText size={13} className="text-primary" style={{ flexShrink: 0 }} />
-              <span style={{ flex: 1, fontSize: '0.78rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {docViewer.name}
-              </span>
-              <button className="icon-btn" onClick={() => setDocViewer(null)}><X size={14} /></button>
-            </div>
-            <div className="doc-viewer-nav">
-              <button className="icon-btn" onClick={() => setDocPage(p => Math.max(1, p - 1))}><ChevronLeft size={13} /></button>
-              <span style={{ fontSize: '0.75rem' }}>{docPage} / 376</span>
-              <button className="icon-btn" onClick={() => setDocPage(p => p + 1)}><ChevronRight size={13} /></button>
-              <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
-                <button className="icon-btn"><Download size={12} /></button>
-                <button className="icon-btn"><ZoomOut size={12} /></button>
-                <button className="icon-btn"><ZoomIn size={12} /></button>
-              </div>
-            </div>
-            <div className="doc-viewer-badge">● Highlighted &nbsp;^&nbsp;1/1&nbsp;×</div>
-            <div className="doc-viewer-body" style={{ padding: '0.85rem', overflowY: 'auto', background: '#f1f5f9', display: 'flex', justifyContent: 'center' }}>
-              <div style={{
-                width: '100%',
-                maxWidth: 620,
-                background: '#ffffff',
-                border: '1px solid #cbd5e1',
-                borderRadius: 4,
-                padding: '1.25rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                fontFamily: 'Inter, system-ui, sans-serif',
-                fontSize: '0.8rem',
-                lineHeight: 1.6,
-                color: '#1e293b'
-              }}>
-                {/* Document Header */}
-                <div style={{ borderBottom: '2px solid #0f172a', paddingBottom: '0.4rem', marginBottom: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h4 style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', margin: 0, textTransform: 'uppercase' }}>
-                      {docViewer.name}
-                    </h4>
-                    <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
-                      Official Market Publication | RAG Verified Citation
-                    </span>
-                  </div>
-                  <span style={{ fontSize: '0.65rem', fontWeight: 700, background: '#eff6ff', color: '#1d4ed8', padding: '2px 6px', borderRadius: 3, border: '1px solid #bfdbfe' }}>
-                    Page {docPage} of 376
-                  </span>
-                </div>
-
-                {/* Highlighted Quote Box */}
-                <div style={{ background: '#fef9c3', borderLeft: '3px solid #eab308', padding: '0.6rem 0.75rem', borderRadius: '0 4px 4px 0', marginBottom: '0.85rem' }}>
-                  <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#a16207', textTransform: 'uppercase', marginBottom: 2 }}>
-                    📍 Highlighted Citation Match (Page {docPage})
-                  </div>
-                  <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: 600, color: '#854d0e' }}>
-                    {docViewer.name.includes('Pink-Sheet')
-                      ? '"Brent crude spot price averaged $81.50/bbl in Q3 2026, supported by OPEC+ supply discipline and lower inventory draws across OECD ports."'
-                      : docViewer.name.includes('IEA')
-                      ? '"Global oil demand growth projected at +1.2 mb/d in 2026, led by petrochemical feedstock expansion across Asia Pacific operations."'
-                      : docViewer.name.includes('OPEC')
-                      ? '"OPEC reference basket increased by 2.4% month-on-month. Non-OPEC supply expansion led by US Permian & Guyana offshore fields."'
-                      : '"Hydrocarbon production telemetry shows 92.4% refinery utilization across coastal infrastructure hubs."'}
-                  </p>
-                </div>
-
-                <p style={{ color: '#334155', marginBottom: '0.75rem' }}>
-                  Executive Analysis: Field operations across Krishna-Godavari deepwater and Barmer onshore basins continue operating within target parameters. Refinery throughput across IOC, ONGC, and HPCL coastal units recorded peak Q3 efficiency.
-                </p>
-
-                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '0.4rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#94a3b8' }}>
-                  <span>CONFIDENTIAL - RAG AUDITED SOURCE</span>
-                  <span>Page {docPage}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DocViewer key={`${docViewer.sourceId}-${docViewer.id}`} source={docViewer} onClose={() => setDocViewer(null)} />
         )}
       </div>
 

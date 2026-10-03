@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { postQuery, errorAnswer } from '../api';
+import { JURISDICTIONS, loadSettings } from '../settings';
 import Markdown from '../Markdown';
+import DocViewer from '../DocViewer';
 import {
   Search, Bookmark, BookmarkCheck, CheckCircle2, MapPin, Calendar,
-  Sparkles, Send, Loader2, FileText, X, ChevronDown,
-  File, ZoomIn, ZoomOut, Download, ChevronLeft, ChevronRight,
-  Flame, Globe, ScrollText, ShieldCheck, Layers
+  Sparkles, Send, Loader2, FileText, ChevronDown,
+  File, Flame, Globe, ScrollText, ShieldCheck, Layers
 } from 'lucide-react';
 
 /* ─── Oil & Gas Domain Data ──────────────────────────────────── */
@@ -64,16 +66,6 @@ const RESULTS = [
   },
 ];
 
-/* Jurisdiction label -> country tag stored on indexed chunks (null = search everything). */
-const JURISDICTIONS = {
-  All: null,
-  India: 'India',
-  Norway: 'Norway',
-  'United Kingdom': 'UK',
-  'United States': 'US',
-  'Global (commodity prices)': 'Global',
-};
-
 /* ─── Citation inline component ─────────────────────────────── */
 function Citation({ ids, onClick }) {
   return (
@@ -104,12 +96,12 @@ export default function DataSearch() {
   const [filters, setFilters] = useState({});
   const [searchQ, setSearchQ] = useState('');
   const [aiQuery, setAiQuery] = useState('');
-  const [jurisdiction, setJurisdiction] = useState('All');
+  const [jurisdiction, setJurisdiction] = useState(() => loadSettings().defaultJurisdiction);
+  const navigate = useNavigate();
   const [isSearching, setIsSearching] = useState(false);
   const [aiMessages, setAiMessages] = useState([]);
   const [citationPopup, setCitationPopup] = useState(null);
   const [docViewer, setDocViewer] = useState(null);
-  const [docPage, setDocPage] = useState(1);
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -154,7 +146,6 @@ export default function DataSearch() {
   const openDocViewer = (src) => {
     setCitationPopup(null);
     setDocViewer(src);
-    setDocPage(src.pages[0] || 1);
   };
 
   const filteredResults = RESULTS.filter(r => {
@@ -203,7 +194,7 @@ export default function DataSearch() {
           <Flame size={18} className="text-primary" />
           Oil &amp; Gas Intelligence Search
         </div>
-        <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => navigate('/settings')}>
           <Sparkles size={14} /> Manage AI Config
         </button>
       </div>
@@ -388,81 +379,7 @@ export default function DataSearch() {
 
               {/* Document viewer panel */}
               {docViewer && (
-                <div className="doc-viewer animate-fade-in" onClick={e => e.stopPropagation()}>
-                  <div className="doc-viewer-header">
-                    <FileText size={14} className="text-primary" style={{ flexShrink: 0 }} />
-                    <span className="text-sm font-semibold" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {docViewer.name}
-                    </span>
-                    <button onClick={() => setDocViewer(null)} className="icon-btn"><X size={15} /></button>
-                  </div>
-                  <div className="doc-viewer-nav">
-                    <button className="icon-btn" onClick={() => setDocPage(p => Math.max(1, p - 1))}><ChevronLeft size={14} /></button>
-                    <span className="text-xs">{docPage} / 376</span>
-                    <button className="icon-btn" onClick={() => setDocPage(p => p + 1)}><ChevronRight size={14} /></button>
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
-                      <button className="icon-btn"><Download size={13} /></button>
-                      <button className="icon-btn"><ZoomOut size={13} /></button>
-                      <button className="icon-btn"><ZoomIn size={13} /></button>
-                    </div>
-                  </div>
-                  <div className="doc-viewer-badge">● Highlighted &nbsp;^&nbsp; 1/1 &nbsp;×</div>
-                  <div className="doc-viewer-body" style={{ padding: '0.85rem', overflowY: 'auto', background: '#f1f5f9', display: 'flex', justifyContent: 'center' }}>
-                    <div style={{
-                      width: '100%',
-                      maxWidth: 620,
-                      background: '#ffffff',
-                      border: '1px solid #cbd5e1',
-                      borderRadius: 4,
-                      padding: '1.25rem',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                      fontFamily: 'Inter, system-ui, sans-serif',
-                      fontSize: '0.8rem',
-                      lineHeight: 1.6,
-                      color: '#1e293b'
-                    }}>
-                      {/* Document Header */}
-                      <div style={{ borderBottom: '2px solid #0f172a', paddingBottom: '0.4rem', marginBottom: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <h4 style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', margin: 0, textTransform: 'uppercase' }}>
-                            {docViewer.name}
-                          </h4>
-                          <span style={{ fontSize: '0.68rem', color: '#64748b' }}>
-                            Statutory Document | RAG Indexed Database
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '0.65rem', fontWeight: 700, background: '#eff6ff', color: '#1d4ed8', padding: '2px 6px', borderRadius: 3, border: '1px solid #bfdbfe' }}>
-                          Page {docPage} of 376
-                        </span>
-                      </div>
-
-                      {/* Highlight Quote Box */}
-                      <div style={{ background: '#fef9c3', borderLeft: '3px solid #eab308', padding: '0.6rem 0.75rem', borderRadius: '0 4px 4px 0', marginBottom: '0.85rem' }}>
-                        <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#a16207', textTransform: 'uppercase', marginBottom: 2 }}>
-                          📍 Highlighted RAG Citation Match (Page {docPage})
-                        </div>
-                        <p style={{ margin: 0, fontSize: '0.78rem', fontWeight: 600, color: '#854d0e' }}>
-                          {docViewer.name.includes('NELP')
-                            ? '"Exploration license terms stipulate 100% cost recovery prior to profit petroleum split with Central Government under OALP guidelines."'
-                            : docViewer.name.includes('Oilfields')
-                            ? '"The Central Government reserves statutory right to grant mining leases in territorial waters and Exclusive Economic Zone (EEZ)."'
-                            : docViewer.name.includes('PNGRB')
-                            ? '"City Gas Distribution (CGD) network exclusivity period set to 8 years for regional distribution infrastructure."'
-                            : '"MoPNG Policy Directive § 4.2: Priority gas allocation mandated for domestic fertilizer plants and CGD networks."'}
-                        </p>
-                      </div>
-
-                      <p style={{ color: '#334155', marginBottom: '0.75rem' }}>
-                        Regulatory Filing Excerpt: Concession agreements and technical operational guidelines enforce strict compliance with DGH safety directives and environmental standards.
-                      </p>
-
-                      <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '0.4rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: '#94a3b8' }}>
-                        <span>RAG VERIFIED STATUTORY DOCUMENT</span>
-                        <span>Page {docPage}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <DocViewer key={`${docViewer.sourceId}-${docViewer.id}`} source={docViewer} onClose={() => setDocViewer(null)} />
               )}
             </div>
 

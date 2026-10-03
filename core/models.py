@@ -24,3 +24,6 @@ class RAGResponse:
     chunks: List[Chunk]
     queries_used: List[str]
     model: str
+    # "knowledge_base" when grounded in retrieved chunks, "general" when the model
+    # answered from its own knowledge because the index had nothing relevant.
+    answer_source: str = "knowledge_base"

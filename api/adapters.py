@@ -13,11 +13,13 @@ import re
 from datetime import datetime
 from typing import Dict, List, Sequence, Tuple
 
+from api.sources import source_id
 from core.models import Chunk
 
 _BRACKET_RE = re.compile(r"[ \t]*[\[【]([^\[\]【】]+)[\]】]")
 _PASSAGE_RE = re.compile(r"Passage\s+(\d+)", re.IGNORECASE)
 _SHORT_NAME_LEN = 18
+_EXCERPT_CHARS = 1500  # cap per cited passage sent to the document viewer
 _EMPTY_LABEL_RE = re.compile(r"^\W*(sources?|citations?)\W*$", re.IGNORECASE)
 
 
@@ -65,6 +67,18 @@ def _short_name(name: str) -> str:
     return name if len(name) <= _SHORT_NAME_LEN else name[:_SHORT_NAME_LEN] + "..."
 
 
+def _excerpt(chunk: Chunk, unit: str, number: int) -> Dict:
+    """The cited passage itself, so the viewer shows real retrieved text."""
+    text = chunk.text if len(chunk.text) <= _EXCERPT_CHARS else chunk.text[:_EXCERPT_CHARS] + " ..."
+    return {
+        "chunkId": str(chunk.id),
+        "page": number if unit == "pg." else None,
+        "row": number if unit == "row" else None,
+        "sheet": chunk.extra.get("sheet"),
+        "text": text,
+    }
+
+
 def build_sources(chunks: Sequence[Chunk]) -> List[Dict]:
     """One entry per distinct source file, numbered 1..n in retrieval order."""
     by_name: Dict[str, Dict] = {}
@@ -72,16 +86,19 @@ def build_sources(chunks: Sequence[Chunk]) -> List[Dict]:
         name = _source_name(c)
         src = by_name.setdefault(name, {
             "id": len(by_name) + 1,
+            "sourceId": source_id(c.source_file) if c.source_file else None,
             "name": name,
             "shortName": _short_name(name),
             "country": c.country,
             "unit": "pg.",
             "pages": set(),
+            "excerpts": [],
         })
         unit, number = _location(c)
         if number:
             src["unit"] = unit
             src["pages"].add(number)
+        src["excerpts"].append(_excerpt(c, unit, number))
     for src in by_name.values():
         src["pages"] = sorted(src["pages"])
     return list(by_name.values())
@@ -122,13 +139,15 @@ def _now_label() -> str:
     return datetime.now().strftime("%I:%M %p").lstrip("0")
 
 
-def to_search_response(answer: str, chunks: Sequence[Chunk]) -> Dict:
+def to_search_response(
+    answer: str, chunks: Sequence[Chunk], answer_source: str = "knowledge_base"
+) -> Dict:
     """Shape for DataSearch and Dashboard: {paragraphs, sources, meta}."""
     sources = build_sources(chunks)
     return {
         "paragraphs": to_paragraphs(answer, chunks, sources),
         "sources": sources,
-        "meta": {"time": _now_label(), "citations": len(sources)},
+        "meta": {"time": _now_label(), "citations": len(sources), "answerSource": answer_source},
     }
 
 
@@ -155,17 +174,26 @@ def _headline_and_detail(answer: str, chunks: Sequence[Chunk]) -> Tuple[str, str
     return paragraphs[0]["text"], "\n\n".join(p["text"] for p in paragraphs[1:])
 
 
-def to_text_response(answer: str, chunks: Sequence[Chunk]) -> Dict:
-    """Shape for Upstream: {text, refs}."""
+def to_text_response(
+    answer: str, chunks: Sequence[Chunk], answer_source: str = "knowledge_base"
+) -> Dict:
+    """Shape for Upstream: {text, refs, answerSource}."""
     text, detail = _headline_and_detail(answer, chunks)
-    return {"text": "\n\n".join(p for p in (text, detail) if p), "refs": build_refs(chunks)}
+    return {
+        "text": "\n\n".join(p for p in (text, detail) if p),
+        "refs": build_refs(chunks),
+        "answerSource": answer_source,
+    }
 
 
 def to_midstream_response(
-    answer: str, chunks: Sequence[Chunk], assets: Dict[str, Tuple[float, float, str]]
+    answer: str,
+    chunks: Sequence[Chunk],
+    assets: Dict[str, Tuple[float, float, str]],
+    answer_source: str = "knowledge_base",
 ) -> Dict:
     """
-    Shape for Midstream: {text, detail, highlight, route, flyTo, refs}.
+    Shape for Midstream: {text, detail, highlight, route, flyTo, refs, answerSource}.
 
     `assets` maps AssetID -> (lat, lng, name). An asset is highlighted when its id
     (e.g. T01) or its name (e.g. "Truck KG-33") appears in the answer; the map
@@ -195,4 +223,5 @@ def to_midstream_response(
         "route": None,
         "flyTo": fly_to,
         "refs": build_refs(chunks),
+        "answerSource": answer_source,
     }

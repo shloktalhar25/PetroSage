@@ -1,12 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Search, FileText, Activity, MessageSquare, Menu, Settings, GitBranch, Scale, Flame } from 'lucide-react';
+import { Search, FileText, Activity, MessageSquare, Menu, Settings as SettingsIcon, GitBranch, Scale, Flame } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import DataSearch from './pages/DataSearch';
 import DataExtraction from './pages/DataExtraction';
 import Midstream from './pages/Midstream';
 import Regulations from './pages/Regulations';
 import Upstream from './pages/Upstream';
+import Settings from './pages/Settings';
 
 function Sidebar() {
   const location = useLocation();
@@ -27,16 +28,18 @@ function Sidebar() {
       </div>
       <div className="flex flex-col gap-4 mt-4" style={{ flex: 1 }}>
         {navItems.map((item) => (
-          <Link key={item.path} to={item.path}>
+          <Link key={item.path} to={item.path} aria-label={item.label}>
             <div className={`sidebar-icon ${location.pathname === item.path ? 'active' : ''}`} title={item.label}>
               {item.icon}
             </div>
           </Link>
         ))}
       </div>
-      <div className="sidebar-icon">
-        <Settings size={20} />
-      </div>
+      <Link to="/settings" aria-label="Settings" aria-current={location.pathname === '/settings' ? 'page' : undefined}>
+        <div className={`sidebar-icon ${location.pathname === '/settings' ? 'active' : ''}`} title="Settings">
+          <SettingsIcon size={20} />
+        </div>
+      </Link>
     </div>
   );
 }
@@ -54,6 +57,7 @@ function App() {
             <Route path="/midstream" element={<Midstream />} />
             <Route path="/regulations" element={<Regulations />} />
             <Route path="/extraction" element={<DataExtraction />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>
       </div>

@@ -125,6 +125,22 @@ The API must be started from the repo root (config paths are relative).
 | `POST /api/rag/market` | Intelligence Review page |
 | `POST /api/upstream/ai` | Upstream page chat |
 | `POST /api/midstream/ai` | Midstream page chat (highlights assets on the map) |
+| `GET /api/health` | Settings page status (API, DevDB, index snapshot, Groq key set, pipeline loaded) |
+| `GET /api/config/public` | Settings page (read-only model and retrieval settings, no secrets) |
+| `GET /api/sources/{id}` | Document viewer: file name, type, real page count |
+| `GET /api/sources/{id}/pages/{n}.png` | Document viewer: a PDF page rendered from the actual file, cited passages highlighted |
+| `GET /api/sources/{id}/file` | Document viewer: download the original source file |
+
+Source ids are stable hashes of the indexed file path; only files listed in `index/chunks.pkl`
+that sit inside `Manual_data/` can be served.
+
+**When the documents don't cover a question**, the RAG endpoints fall back to answering from
+the model's own knowledge. Those answers are returned with `answerSource: "general"` and carry
+no citations. Send `"allow_general": false` (or turn it off on the
+Settings page) to get the old "not found" reply instead. The CLI (`query.py`) never falls back.
+
+User preferences on the Settings page (default jurisdiction, general-knowledge fallback,
+request timeout) are stored in the browser's local storage.
 
 Not wired to the backend (still static UI): the Regulations page, the Data Extraction page, the
 result cards on Market & Asset Search, and the map/asset data on Upstream and Midstream.

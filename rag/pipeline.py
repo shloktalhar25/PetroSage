@@ -19,8 +19,14 @@ from store.retriever import Retriever, deduplicate
 from rag.expansion import expand_query
 from rag.rerank import mmr_rerank
 from rag.compression import compress_chunks
-from rag.generation import generate_answer
+from rag.generation import generate_answer, generate_general_answer, is_insufficient
 from rag.crag import evaluate_chunks
+
+NOT_FOUND_MESSAGE = "I could not find relevant information in the knowledge base for your question."
+CRAG_EMPTY_MESSAGE = (
+    "Based on my evaluation (Corrective RAG), none of the retrieved information is relevant "
+    "to your question. Therefore, I cannot provide a factual answer."
+)
 
 
 class RAGPipeline:
@@ -38,9 +44,32 @@ class RAGPipeline:
         self.compress  = compress
         self.crag      = crag
 
-    def query(
-        self, question: str, verbose: bool = False, country: Optional[str] = None
+    def _no_answer(
+        self, question: str, queries: List[str], message: str, general_fallback: bool
     ) -> RAGResponse:
+        """The index couldn't answer: fall back to the model's own knowledge, or say so."""
+        if general_fallback:
+            return RAGResponse(
+                answer=generate_general_answer(self.llm, question),
+                chunks=[],
+                queries_used=queries,
+                model=GROQ_MODEL,
+                answer_source="general",
+            )
+        return RAGResponse(answer=message, chunks=[], queries_used=queries, model=GROQ_MODEL)
+
+    def query(
+        self,
+        question: str,
+        verbose: bool = False,
+        country: Optional[str] = None,
+        general_fallback: bool = False,
+    ) -> RAGResponse:
+        """
+        Args:
+            general_fallback: When nothing relevant is retrieved, answer from the LLM's
+                own knowledge (marked answer_source="general") instead of declining.
+        """
         # 1. Query expansion
         alt_queries, hypo_passage = expand_query(self.llm, question)
 
@@ -60,12 +89,7 @@ class RAGPipeline:
             all_candidates.extend(hits)
 
         if not all_candidates:
-            return RAGResponse(
-                answer="I could not find relevant information in the knowledge base for your question.",
-                chunks=[],
-                queries_used=all_queries,
-                model=GROQ_MODEL,
-            )
+            return self._no_answer(question, all_queries, NOT_FOUND_MESSAGE, general_fallback)
 
         # 4. Deduplicate
         candidates = deduplicate(all_candidates)
@@ -86,12 +110,7 @@ class RAGPipeline:
 
             if not final_chunks:
                 # If all chunks were deemed irrelevant
-                return RAGResponse(
-                    answer="Based on my evaluation (Corrective RAG), none of the retrieved information is relevant to your question. Therefore, I cannot provide a factual answer.",
-                    chunks=[],
-                    queries_used=all_queries,
-                    model=GROQ_MODEL,
-                )
+                return self._no_answer(question, all_queries, CRAG_EMPTY_MESSAGE, general_fallback)
 
         # 6. Optional contextual compression
         if self.compress:
@@ -101,6 +120,8 @@ class RAGPipeline:
 
         # 7. Generate answer
         answer = generate_answer(self.llm, question, final_chunks)
+        if is_insufficient(answer):
+            return self._no_answer(question, all_queries, NOT_FOUND_MESSAGE, general_fallback)
 
         return RAGResponse(
             answer=answer,
